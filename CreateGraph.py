@@ -22,6 +22,16 @@ def createGraph( smatrix, criteria ):
 def RandomPickFromList( alist ):
     return choice( alist )
 
+def BindingTypeFilter( alist, moldict, bindingType = None ):
+    if bindingType is None:
+        return alist
+    newlist = []
+    for eachIndex in alist:
+        print moldict[ eachIndex ].keys()
+        if moldict[ eachIndex ]["typeofbinding"] == bindingType:
+            newlist.append( eachIndex )
+    return newlist
+
 def LeaderInCluster( graphObj, moldict ):
     leaderList = []
     for eachSubGraph in nx.biconnected_component_subgraphs( graphObj ):
@@ -41,18 +51,21 @@ def MoleculeDictionary( infile ):
     molDict  = dict()
     for index in range( totalrow ):
         ligandid = all_info[ "ligandid" ][ index ]
-        molDict[index] = { "ligandid": ligandid }
+        bindingtype = all_info[ "typeofbinding" ][ index ]
+        molDict[index] = { "ligandid": ligandid, "typeofbinding": bindingtype }
     return molDict
-    
+
 
 if __name__ == "__main__":
-    smatrixfile = "/home/jing/Dropbox/alloster/workspace/Second_Age/Data/similarityMatrix.npy"
+    smatrixfile = "./Data/similarityMatrix.npy"
     infile = "./Data/ligand_5_7_ppilot.txt"
+    bindingtype = "allosteric"
     smatrix = np.load( smatrixfile )
-    newgraph = createGraph( smatrix, 0.1 )
-    ## edge test
-    #for each in newgraph.edges():
-    #    print each
-    moldict = MoleculeDictionary( infile ) 
+    newgraph = createGraph( smatrix, 0.7 )
+    ### edge test
+    ##for each in newgraph.edges():
+    ##    print each
+    moldict = MoleculeDictionary( infile )
     leaderlist = LeaderInCluster( newgraph, moldict )
+    leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     BuildTree( leaderlist, smatrix, moldict )
