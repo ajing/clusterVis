@@ -40,11 +40,9 @@ class BuildTree():
                     ch = ete2.Tree()
                     ch.dist = cl_dist
                     origID  = self.leaderList[ch_node.id]
-                    ch.name = str(origID)
+                    ch.name = self.molDict[ origID ]["ligandid"]
                     # give one more attribute for size
                     #ch.size = ch_node.id
-                    print ch_node.id
-                    print self.molDict[ ch_node.id ]
                     ch.img_style["size"] = self.molDict[ origID ]["size"]
                     ligandFace = self.imageFace( ch_node.id )
                     ch.add_face( ligandFace, column = 1 )
@@ -55,11 +53,17 @@ class BuildTree():
         tree = root
         return tree
 
+    def my_layout( self, node ):
+        if not node.is_leaf():
+            node.img_style["size"] = 0
+
     def drawTree( self ):
         ts = ete2.TreeStyle()
         ts.mode = "c"
+        ts.layout_fn = self.my_layout
         t = self.prepareTree( )
-        t.show( tree_style = ts )
+        #t.show( tree_style = ts )
+        t.render("mytree.png", tree_style=ts)
 
 if __name__ == "__main__":
     pass

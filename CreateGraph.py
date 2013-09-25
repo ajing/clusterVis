@@ -7,7 +7,7 @@ from random import choice
 from MakeStructuresForSmiles import GetAllinfo
 from BuildTree import BuildTree
 
-def CreateGraph( smatrix, criteria ):
+def createGraph( smatrix, criteria ):
     newGraph = nx.Graph()
     row, col = smatrix.shape
     for eachrow in range(row):
@@ -46,13 +46,13 @@ def MoleculeDictionary( infile ):
     
 
 if __name__ == "__main__":
-    smatrixfile = "/home/jing/Dropbox/alloster/workspace/Second_Age/Data/similarityMatrix_comp.npy"
+    smatrixfile = "/home/jing/Dropbox/alloster/workspace/Second_Age/Data/similarityMatrix.npy"
     infile = "./Data/ligand_5_7_ppilot.txt"
     smatrix = np.load( smatrixfile )
-    newgraph = CreateGraph( smatrix, 0.9 )
+    newgraph = createGraph( smatrix, 0.1 )
     ## edge test
-    for each in newgraph.edges():
-        print each
+    #for each in newgraph.edges():
+    #    print each
     moldict = MoleculeDictionary( infile ) 
     leaderlist = LeaderInCluster( newgraph, moldict )
     BuildTree( leaderlist, smatrix, moldict )
