@@ -34,7 +34,7 @@ def BindingTypeFilter( alist, moldict, bindingType = None ):
 
 def LeaderInCluster( graphObj, moldict ):
     leaderList = []
-    for eachSubGraph in nx.biconnected_component_subgraphs( graphObj ):
+    for eachSubGraph in nx.connected_component_subgraphs( graphObj ):
         centerlist = nx.center(eachSubGraph)
         if centerlist < 1:
             raise "A subgraph with less than 1 center"
@@ -61,11 +61,13 @@ if __name__ == "__main__":
     infile = "./Data/ligand_5_7_ppilot.txt"
     bindingtype = "allosteric"
     smatrix = np.load( smatrixfile )
-    newgraph = createGraph( smatrix, 0.9 )
+    newgraph = createGraph( smatrix, 0.7 )
     ### edge test
     ##for each in newgraph.edges():
     ##    print each
     moldict = MoleculeDictionary( infile )
     leaderlist = LeaderInCluster( newgraph, moldict )
+    print "length of leader list:"
+    print len(leaderlist)
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
-    BuildTree( leaderlist, smatrix, moldict )
+    #BuildTree( leaderlist, smatrix, moldict )

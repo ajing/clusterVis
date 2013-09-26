@@ -66,7 +66,7 @@ class BuildTree():
         ts.layout_fn = self.my_layout
         t = self.prepareTree( )
         #t.show( tree_style = ts )
-        t.render("mytree.png", tree_style=ts)
+        t.render("mytree.png", w=20000, tree_style=ts)
 
 if __name__ == "__main__":
     pass
