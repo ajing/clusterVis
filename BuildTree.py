@@ -24,7 +24,9 @@ class BuildTree():
         # Y is a distance matrix for all elements
         #hcluster part
         Y = self.LeaderMatrix( self.distanceMatrix, self.leaderList )
+        N = Y.shape[0]
         Z = linkage(Y, "single")
+        print Z.shape
         T = to_tree(Z)
         #ete2 section
         root = ete2.Tree()
@@ -39,13 +41,14 @@ class BuildTree():
                 if ch_node:
                     ch = ete2.Tree()
                     ch.dist = cl_dist
-                    origID  = self.leaderList[ch_node.id]
-                    ch.name = self.molDict[ origID ]["ligandid"]
-                    # give one more attribute for size
+                    if ch_node.id < N:
+                        origID  = self.leaderList[ch_node.id]
+                        ch.name = self.molDict[ origID ]["ligandid"]
+                        # give one more attribute for size
                     #ch.size = ch_node.id
-                    ch.img_style["size"] = self.molDict[ origID ]["size"]
-                    ligandFace = self.imageFace( ch_node.id )
-                    ch.add_face( ligandFace, column = 1 )
+                        ch.img_style["size"] = self.molDict[ origID ]["size"]
+                        ligandFace = self.imageFace( ch_node.id )
+                        ch.add_face( ligandFace, column = 1 )
                     item2node[node].add_child(ch)
                     item2node[ch_node] = ch
                     to_visit.append(ch_node)

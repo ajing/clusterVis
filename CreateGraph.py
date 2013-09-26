@@ -10,6 +10,7 @@ from BuildTree import BuildTree
 def createGraph( smatrix, criteria ):
     newGraph = nx.Graph()
     row, col = smatrix.shape
+    print row, col
     for eachrow in range(row):
         # in case, isolated nodes exist in graph
         newGraph.add_node( eachrow )
@@ -27,7 +28,6 @@ def BindingTypeFilter( alist, moldict, bindingType = None ):
         return alist
     newlist = []
     for eachIndex in alist:
-        print moldict[ eachIndex ].keys()
         if moldict[ eachIndex ]["typeofbinding"] == bindingType:
             newlist.append( eachIndex )
     return newlist
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     infile = "./Data/ligand_5_7_ppilot.txt"
     bindingtype = "allosteric"
     smatrix = np.load( smatrixfile )
-    newgraph = createGraph( smatrix, 0.7 )
+    newgraph = createGraph( smatrix, 0.9 )
     ### edge test
     ##for each in newgraph.edges():
     ##    print each
