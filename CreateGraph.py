@@ -61,7 +61,7 @@ if __name__ == "__main__":
     infile = "./Data/ligand_5_7_ppilot.txt"
     bindingtype = "allosteric"
     smatrix = np.load( smatrixfile )
-    newgraph = createGraph( smatrix, 0.7 )
+    newgraph = createGraph( smatrix, 0.3 )
     ### edge test
     ##for each in newgraph.edges():
     ##    print each
@@ -70,4 +70,4 @@ if __name__ == "__main__":
     print "length of leader list:"
     print len(leaderlist)
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
-    #BuildTree( leaderlist, smatrix, moldict )
+    BuildTree( leaderlist, smatrix, moldict )
