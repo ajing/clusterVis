@@ -61,7 +61,7 @@ if __name__ == "__main__":
     infile = "./Data/ligand_5_7_ppilot.txt"
     bindingtype = "allosteric"
     smatrix = np.load( smatrixfile )
-    newgraph = createGraph( smatrix, 0.3 )
+    newgraph = createGraph( smatrix, 0.2 )
     ### edge test
     ##for each in newgraph.edges():
     ##    print each
