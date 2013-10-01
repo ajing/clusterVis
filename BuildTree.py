@@ -9,8 +9,9 @@ class BuildTree():
     def __init__( self, leaderlist, smatrix, moldict, figurename):
         self.distanceMatrix = smatrix
         self.leaderList = leaderlist
-        self.molDict = moldict
-        self.figure  = figurename + ".svg"
+        self.molDict  = moldict
+        self.figure   = figurename + ".svg"
+        self.savePath = "./Data/"
         self.imgPath = "./Image/"
         self.drawTree()
 
@@ -66,11 +67,13 @@ class BuildTree():
         ts = ete2.TreeStyle()
         ts.mode = "c"
         ts.layout_fn = self.my_layout
-        t = self.prepareTree( )
+        t = self.prepareTree()
+        t.unroot()
         fmt='%Y-%m-%d-%Hh-%Mm_{fname}'
         newfilename = datetime.datetime.now().strftime(fmt).format(fname = self.figure)
+        newfile = self.savePath + newfilename
         #t.show( tree_style = ts )
-        t.render( newfilename, tree_style=ts)
+        t.render( newfile, tree_style=ts)
 
 if __name__ == "__main__":
     pass

@@ -3,6 +3,7 @@
 """
 import networkx as nx
 import numpy as np
+import os
 from random import choice
 from MakeStructuresForSmiles import GetAllinfo
 from BuildTree import BuildTree
@@ -57,22 +58,38 @@ def MoleculeDictionary( infile ):
         molDict[index] = { "ligandid": ligandid, "typeofbinding": bindingtype }
     return molDict
 
+def CheckExistingLeaderlist( typeofbinding, criteria ):
+    criString = str(criteria)
+    for eachfile in os.listdir("./Data/"):
+        if typeofbinding in eachfile and criString in eachfile:
+            return eachfile
+    return None
+
+def SaveLeader(leaderlist, typeofbinding, criteria):
+    criString = str(criteria)
+    filename = "_".join([ typeofbinding, criString ])
+    saveDir  = "./Data/"
+    np.save( newfilename, leaderlist )
 
 def main( bindingtype ):
-    smatrixfile = "./Data/similarityMatrix_small.npy"
-    infile = "./Data/ligand_5_7_ppilot.txt"
-    smatrix = np.load( smatrixfile )
-    newgraph = createGraph( smatrix, 0.2 )
-    ### edge test
-    ##for each in newgraph.edges():
-    ##    print each
-    moldict = MoleculeDictionary( infile )
-    leaderlist = LeaderInCluster( newgraph, moldict )
+    minDistance = 0.3
+    smatrixfile = "./Data/similarityMatrix.npy"
+    infile      = "./Data/ligand_5_7_ppilot.txt"
+    smatrix     = np.load( smatrixfile )
+    leaderfile  = CheckExistingLeaderlist( bindingtype, minDistance )
+    if leaderfile:
+        leaderlist = np.load( leaderfile )
+    else:
+        newgraph = createGraph( smatrix, minDistance )
+        moldict = MoleculeDictionary( infile )
+        leaderlist = LeaderInCluster( newgraph, moldict )
+        SaveLeader(leaderlist, bindingtype, minDistance)
+    leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     print "length of leader list:"
     print len(leaderlist)
-    leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     BuildTree( leaderlist, smatrix, moldict, bindingtype )
 
 if __name__ == "__main__":
-    for each in ["allosteric", "competitive"]:
+    distanceList = [ 0.5, 0.45, 0.4, 0.35, 0.25 ]
+    for each in ["allosteric"]:
         main(each)
