@@ -30,6 +30,8 @@ def BindingTypeFilter( alist, moldict, bindingType = None ):
     for eachIndex in alist:
         if moldict[ eachIndex ]["typeofbinding"] == bindingType:
             newlist.append( eachIndex )
+    if len(newlist) == 0:
+        raise RuntimeError("Empty list after filtering!!")
     return newlist
 
 def LeaderInCluster( graphObj, moldict ):
@@ -56,10 +58,9 @@ def MoleculeDictionary( infile ):
     return molDict
 
 
-if __name__ == "__main__":
-    smatrixfile = "./Data/similarityMatrix.npy"
+def main( bindingtype ):
+    smatrixfile = "./Data/similarityMatrix_small.npy"
     infile = "./Data/ligand_5_7_ppilot.txt"
-    bindingtype = "allosteric"
     smatrix = np.load( smatrixfile )
     newgraph = createGraph( smatrix, 0.2 )
     ### edge test
@@ -70,4 +71,8 @@ if __name__ == "__main__":
     print "length of leader list:"
     print len(leaderlist)
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
-    BuildTree( leaderlist, smatrix, moldict )
+    BuildTree( leaderlist, smatrix, moldict, bindingtype )
+
+if __name__ == "__main__":
+    for each in ["allosteric", "competitive"]:
+        main(each)

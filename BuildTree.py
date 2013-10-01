@@ -2,13 +2,15 @@
     Build Tree from smatrix
 '''
 import ete2
+import datetime
 from hcluster import linkage, to_tree
 
 class BuildTree():
-    def __init__( self, leaderlist, smatrix, moldict):
+    def __init__( self, leaderlist, smatrix, moldict, figurename):
         self.distanceMatrix = smatrix
         self.leaderList = leaderlist
         self.molDict = moldict
+        self.figure  = figurename + ".svg"
         self.imgPath = "./Image/"
         self.drawTree()
 
@@ -65,8 +67,10 @@ class BuildTree():
         ts.mode = "c"
         ts.layout_fn = self.my_layout
         t = self.prepareTree( )
+        fmt='%Y-%m-%d-%Hh-%Mm_{fname}'
+        newfilename = datetime.datetime.now().strftime(fmt).format(fname = self.figure)
         #t.show( tree_style = ts )
-        t.render("mytree.svg", tree_style=ts)
+        t.render( newfilename, tree_style=ts)
 
 if __name__ == "__main__":
     pass
