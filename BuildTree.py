@@ -1,13 +1,13 @@
 '''
-    Build Tree from smatrix
+    Build Tree from dmatrix
 '''
 import ete2
 import datetime
 from hcluster import linkage, to_tree
 
 class BuildTree():
-    def __init__( self, leaderlist, smatrix, moldict, figurename):
-        self.distanceMatrix = smatrix
+    def __init__( self, leaderlist, dmatrix, moldict, figurename):
+        self.distanceMatrix = dmatrix
         self.leaderList = leaderlist
         self.molDict  = moldict
         self.figure   = figurename + ".svg"
@@ -15,8 +15,8 @@ class BuildTree():
         self.imgPath = "./Image/"
         self.drawTree()
 
-    def LeaderMatrix( self, smatrix, leaderlist ):
-        return smatrix[leaderlist, :][:, leaderlist]
+    def LeaderMatrix( self, dmatrix, leaderlist ):
+        return dmatrix[leaderlist, :][:, leaderlist]
 
     def imageFace( self, nodeID ):
         imageFileName = self.molDict[ nodeID ][ "ligandid" ]
@@ -48,7 +48,7 @@ class BuildTree():
                         origID  = self.leaderList[ch_node.id]
                         ch.name = self.molDict[ origID ]["ligandid"]
                         # give one more attribute for size
-                    #ch.size = ch_node.id
+                        #ch.size = ch_node.id
                         ch.img_style["size"] = self.molDict[ origID ]["size"]
                         ligandFace = self.imageFace( ch_node.id )
                         ch.add_face( ligandFace, column = 1 )
@@ -66,14 +66,14 @@ class BuildTree():
     def drawTree( self ):
         ts = ete2.TreeStyle()
         ts.mode = "c"
-        ts.layout_fn = self.my_layout
+        #ts.layout_fn = self.my_layout
         t = self.prepareTree()
         t.unroot()
         fmt='%Y-%m-%d-%Hh-%Mm_{fname}'
         newfilename = datetime.datetime.now().strftime(fmt).format(fname = self.figure)
         newfile = self.savePath + newfilename
-        #t.show( tree_style = ts )
-        t.render( newfile, tree_style=ts)
+        t.show( tree_style = ts )
+        #t.render( newfile, tree_style=ts)
 
 if __name__ == "__main__":
     pass

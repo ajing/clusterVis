@@ -1,5 +1,5 @@
 """
-    Create graph from smatrix
+    Create graph from dmatrix
 """
 import networkx as nx
 import numpy as np
@@ -7,17 +7,23 @@ import os
 from random import choice
 from MakeStructuresForSmiles import GetAllinfo
 from BuildTree import BuildTree
+# Global variable so I can change easily
+__SAVEDIR__ = "./Data/"
 
-def createGraph( smatrix, criteria ):
+def createGraph( dmatrix, criteria, moldict, typeofbinding ):
     newGraph = nx.Graph()
-    row, col = smatrix.shape
+    row, col = dmatrix.shape
     print row, col
     for eachrow in range(row):
         # in case, isolated nodes exist in graph
+        if not IsTypeofBinding(eachrow, moldict, typeofbinding):
+            continue
         newGraph.add_node( eachrow )
         for eachcol in range( eachrow + 1, col ):
-            eachweight = smatrix[eachrow, eachcol]
-            if eachweight > criteria:
+            if not IsTypeofBinding(eachcol, moldict, typeofbinding):
+                continue
+            eachweight = dmatrix[eachrow, eachcol]
+            if eachweight < criteria:
                 newGraph.add_edge( eachrow, eachcol, weight = eachweight )
     return newGraph
 
@@ -39,7 +45,7 @@ def LeaderInCluster( graphObj, moldict ):
     leaderList = []
     for eachSubGraph in nx.connected_component_subgraphs( graphObj ):
         centerlist = nx.center(eachSubGraph)
-        if centerlist < 1:
+        if len(centerlist) < 1:
             raise "A subgraph with less than 1 center"
         leaderID   = RandomPickFromList(centerlist)
         leaderList.append( leaderID )
@@ -47,6 +53,8 @@ def LeaderInCluster( graphObj, moldict ):
         moldict[ leaderID ][ "size" ] = graphSize
     return leaderList
 
+def IsTypeofBinding( index, moldict, typeofbinding ):
+    return moldict[index]["typeofbinding"] == typeofbinding
 
 def MoleculeDictionary( infile ):
     all_info = GetAllinfo( infile )
@@ -60,36 +68,37 @@ def MoleculeDictionary( infile ):
 
 def CheckExistingLeaderlist( typeofbinding, criteria ):
     criString = str(criteria)
-    for eachfile in os.listdir("./Data/"):
+    for eachfile in os.listdir(__SAVEDIR__):
         if typeofbinding in eachfile and criString in eachfile:
-            return eachfile
+            return __SAVEDIR__ + eachfile
     return None
 
-def SaveLeader(leaderlist, typeofbinding, criteria):
+def SaveLeaderAndMolDict(leaderlist, moldict, typeofbinding, criteria):
     criString = str(criteria)
     filename = "_".join([ typeofbinding, criString ])
-    saveDir  = "./Data/"
-    np.save( saveDir + filename, leaderlist )
+    np.savez( __SAVEDIR__ + filename, leaderlist, moldict )
 
 def main( bindingtype ):
-    minDistance = 0.3
-    smatrixfile = "./Data/similarityMatrix_small.npy"
+    minDistance = 0.75
+    smatrixfile = "./Data/similarityMatrix.npy"
     infile      = "./Data/ligand_5_7_ppilot.txt"
-    smatrix     = np.load( smatrixfile )
+    dmatrix     = 1 - np.load( smatrixfile )
     leaderfile  = CheckExistingLeaderlist( bindingtype, minDistance )
     if leaderfile:
-        leaderlist = np.load( leaderfile )
+        leader_moldict = np.load(leaderfile)
+        leaderlist     = leader_moldict["leaderlist"]
+        moldict        = leader_moldict["moldict"]
     else:
-        newgraph = createGraph( smatrix, minDistance )
         moldict = MoleculeDictionary( infile )
+        newgraph = createGraph( dmatrix, minDistance, moldict, bindingtype)
         leaderlist = LeaderInCluster( newgraph, moldict )
-        SaveLeader(leaderlist, bindingtype, minDistance)
+        SaveLeaderAndMolDict(leaderlist, moldict, bindingtype, minDistance)
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     print "length of leader list:"
     print len(leaderlist)
-    BuildTree( leaderlist, smatrix, moldict, bindingtype )
+    BuildTree( leaderlist, dmatrix, moldict, bindingtype )
 
 if __name__ == "__main__":
-    distanceList = [ 0.5, 0.45, 0.4, 0.35, 0.25 ]
-    for each in ["allosteric"]:
+    distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
+    for each in ["allosteric", "competitive"]:
         main(each)
