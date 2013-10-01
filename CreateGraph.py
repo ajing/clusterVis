@@ -69,11 +69,11 @@ def SaveLeader(leaderlist, typeofbinding, criteria):
     criString = str(criteria)
     filename = "_".join([ typeofbinding, criString ])
     saveDir  = "./Data/"
-    np.save( newfilename, leaderlist )
+    np.save( saveDir + filename, leaderlist )
 
 def main( bindingtype ):
     minDistance = 0.3
-    smatrixfile = "./Data/similarityMatrix.npy"
+    smatrixfile = "./Data/similarityMatrix_small.npy"
     infile      = "./Data/ligand_5_7_ppilot.txt"
     smatrix     = np.load( smatrixfile )
     leaderfile  = CheckExistingLeaderlist( bindingtype, minDistance )
