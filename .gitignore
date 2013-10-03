@@ -36,3 +36,7 @@ nosetests.xml
 
 # Data
 *.txt
+*.svg
+*.p
+*.npy
+*.npz

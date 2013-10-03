@@ -3,6 +3,7 @@
 '''
 import ete2
 import datetime
+import math
 from hcluster import linkage, to_tree
 
 class BuildTree():
@@ -29,7 +30,6 @@ class BuildTree():
         Y = self.LeaderMatrix( self.distanceMatrix, self.leaderList )
         N = Y.shape[0]
         Z = linkage(Y, "single")
-        print Z.shape
         T = to_tree(Z)
         #ete2 section
         root = ete2.Tree()
@@ -49,7 +49,11 @@ class BuildTree():
                         ch.name = self.molDict[ origID ]["ligandid"]
                         # give one more attribute for size
                         #ch.size = ch_node.id
-                        ch.img_style["size"] = self.molDict[ origID ]["size"]
+                        try:
+                            ch.img_style["size"] = math.log( self.molDict[ origID ]["size"] )
+                        except:
+                            print self.molDict[ origID ]
+                            raise LookupError("cannot find:" + str(origID))
                         ligandFace = self.imageFace( ch_node.id )
                         ch.add_face( ligandFace, column = 1 )
                     item2node[node].add_child(ch)
@@ -66,14 +70,14 @@ class BuildTree():
     def drawTree( self ):
         ts = ete2.TreeStyle()
         ts.mode = "c"
-        #ts.layout_fn = self.my_layout
+        ts.layout_fn = self.my_layout
         t = self.prepareTree()
         t.unroot()
         fmt='%Y-%m-%d-%Hh-%Mm_{fname}'
         newfilename = datetime.datetime.now().strftime(fmt).format(fname = self.figure)
         newfile = self.savePath + newfilename
-        t.show( tree_style = ts )
-        #t.render( newfile, tree_style=ts)
+        #t.show( tree_style = ts )
+        t.render( newfile, tree_style=ts)
 
 if __name__ == "__main__":
     pass
