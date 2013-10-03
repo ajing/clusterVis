@@ -1,7 +1,6 @@
 """
     Create graph from dmatrix
 """
-import networkx as nx
 import numpy as np
 import os
 import pickle
@@ -12,21 +11,27 @@ from hcluster import linkage, fcluster
 # Global variable so I can change easily
 __SAVEDIR__ = "./Data/"
 
-def createGraph( dmatrix, criteria, moldict, typeofbinding ):
-    newGraph = nx.Graph()
-    row, col = dmatrix.shape
-    for eachrow in range(row):
-        # in case, isolated nodes exist in graph
-        if not IsTypeofBinding(eachrow, moldict, typeofbinding):
-            continue
-        newGraph.add_node( eachrow )
-        for eachcol in range( eachrow + 1, col ):
-            if not IsTypeofBinding(eachcol, moldict, typeofbinding):
-                continue
-            eachweight = dmatrix[eachrow, eachcol]
-            if eachweight < criteria:
-                newGraph.add_edge( eachrow, eachcol, weight = eachweight )
-    return newGraph
+def ClusterAssignment( dmatrix, criteria ):
+    dlink = linkage(dmatrix)
+    clusterIndex = fcluster(dlink, criteria)
+    return np.array(clusterIndex)
+
+def LeaderInCluster( clusterIndex, moldict ):
+    leaderList = []
+    for groupID in range(1, max(clusterIndex + 1)):
+        indices = (clusterIndex == groupID).nonzero()
+        indicesConvert = indices[0].tolist()
+        # probably I should find a way to get center of cluster
+        print len(indicesConvert)
+        if len(indicesConvert) < 1:
+            raise "A subgraph with less than 1 center"
+        leaderID   = RandomPickFromList(indicesConvert)
+        print leaderID
+        leaderList.append(leaderID)
+        clusterSize = len(indicesConvert)
+        print "clustersize", clusterSize
+        moldict[ leaderID ][ "size" ] = clusterSize
+    return leaderList
 
 def RandomPickFromList( alist ):
     return choice( alist )
@@ -41,18 +46,6 @@ def BindingTypeFilter( alist, moldict, bindingType = None ):
     if len(newlist) == 0:
         raise RuntimeError("Empty list after filtering!!")
     return newlist
-
-def LeaderInCluster( graphObj, moldict ):
-    leaderList = []
-    for eachSubGraph in nx.connected_component_subgraphs( graphObj ):
-        centerlist = nx.center(eachSubGraph)
-        if len(centerlist) < 1:
-            raise "A subgraph with less than 1 center"
-        leaderID   = RandomPickFromList(centerlist)
-        leaderList.append( leaderID )
-        graphSize  = len(eachSubGraph)
-        moldict[ leaderID ][ "size" ] = graphSize
-    return leaderList
 
 def IsTypeofBinding( index, moldict, typeofbinding ):
     return moldict[index]["typeofbinding"] == typeofbinding
@@ -116,15 +109,15 @@ def main( bindingtype, minDistance, dmatrix ):
         SizeHistogram( moldict )
     else:
         moldict = MoleculeDictionary( infile )
-        SizeHistogram( moldict )
-        newgraph = createGraph( dmatrix, minDistance, moldict, bindingtype)
-        leaderlist = LeaderInCluster( newgraph, moldict )
+        clusterindex = ClusterAssignment( dmatrix, minDistance)
+        leaderlist = LeaderInCluster( clusterindex, moldict )
         SaveLeaderAndMolDict(leaderlist, moldict, bindingtype, minDistance)
+        SizeHistogram( moldict )
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     BuildTree( leaderlist, dmatrix, moldict, str(minDistance) + "_" + bindingtype )
 
 if __name__ == "__main__":
-    smatrixfile = "./Data/similarityMatrix.npy"
+    smatrixfile = "./Data/similarityMatrix_small.npy"
     dmatrix = 1 - np.load(smatrixfile)
     distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
     #distanceList = [ 0.8 ]
