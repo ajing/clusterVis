@@ -11,22 +11,39 @@ from hcluster import linkage, fcluster
 # Global variable so I can change easily
 __SAVEDIR__ = "./Data/"
 
-def ClusterAssignment( dmatrix, criteria ):
-    dlink = linkage(dmatrix)
-    clusterIndex = fcluster(dlink, criteria)
-    return np.array(clusterIndex)
+def LeaderMatrix( self, dmatrix, leaderlist ):
+    return dmatrix[leaderlist, :][:, leaderlist]
 
-def LeaderInCluster( clusterIndex, moldict ):
+def MapIndexbyBindingSite( moldict, bindingtype):
+    indexList = []
+    for eachID in moldict:
+        if moldict[eachID]["typeofbinding"] == bindingtype:
+            indexList.append(eachID)
+    print "indexList length:", len(indexList)
+    print "original length:", len(moldict.keys())
+    return np.array(indexList)
+
+def ClusterAssignment( dmatrix, criteria, indexarray ):
+    print indexarray
+    dim  =  dmatrix.shape
+    modiarray   = indexarray[ indexarray < dim[0] ]
+    if len(modiarray) < 1:
+        raise LookupError("Cannot find this type of binding")
+    dmatrixType = dmatrix[modiarray, :][:, modiarray]
+    dlink = linkage(dmatrixType)
+    clusterIndex = fcluster(dlink, criteria)
+    return clusterIndex
+
+def LeaderInCluster( clusterIndex, moldict, bindingType ):
     leaderList = []
-    for groupID in range(1, max(clusterIndex + 1)):
+    for groupID in range(1, max(clusterIndex) + 1):
         indices = (clusterIndex == groupID).nonzero()
+        print "groupID:", groupID
         indicesConvert = indices[0].tolist()
         # probably I should find a way to get center of cluster
         print len(indicesConvert)
-        if len(indicesConvert) < 1:
-            raise "A subgraph with less than 1 center"
+        numLoops = 0
         leaderID   = RandomPickFromList(indicesConvert)
-        print leaderID
         leaderList.append(leaderID)
         clusterSize = len(indicesConvert)
         print "clustersize", clusterSize
@@ -94,9 +111,17 @@ def SaveLeaderAndMolDict(leaderlist, moldict, typeofbinding, criteria):
     np.savez( filedir, leaderlist )
     pickle.dump( moldict, open( filedir + ".p", "wb" ))
 
+def SanityCheck( moldict, dmatrix ):
+    dmatrixdim = dmatrix.shape
+    moldictlen = len(moldict.keys())
+    if not dmatrixdim[0] == moldictlen:
+        print "dmatrixdim:", dmatrixdim[0]
+        print "moldictlen:", moldictlen
+        raise ImportError("The dmatrix and moldict dimension doesn't match")
+
 def main( bindingtype, minDistance, dmatrix ):
     #minDistance = 0.75
-    infile      = "./Data/ligand_5_7_ppilot.txt"
+    infile      = "./Data/ligand_5_7_ppilot_modified.txt"
     leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
     if leaderAndmol:
         leaderfile, moldictfile = leaderAndmol
@@ -106,21 +131,26 @@ def main( bindingtype, minDistance, dmatrix ):
             print "leaderlist length:", len(leaderlist)
         with open(moldictfile, "rb") as moldictobj:
             moldict        = pickle.load(moldictobj)
+        SanityCheck( moldict, dmatrix )
         SizeHistogram( moldict )
     else:
         moldict = MoleculeDictionary( infile )
-        clusterindex = ClusterAssignment( dmatrix, minDistance)
-        leaderlist = LeaderInCluster( clusterindex, moldict )
+        SanityCheck( moldict, dmatrix )
+        indexArray   = MapIndexbyBindingSite( moldict, bindingtype )
+        clusterindex = ClusterAssignment( dmatrix, minDistance, indexArray )
+        leaderlist = LeaderInCluster( clusterindex, moldict, bindingtype )
         SaveLeaderAndMolDict(leaderlist, moldict, bindingtype, minDistance)
         SizeHistogram( moldict )
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     BuildTree( leaderlist, dmatrix, moldict, str(minDistance) + "_" + bindingtype )
 
 if __name__ == "__main__":
-    smatrixfile = "./Data/similarityMatrix_small.npy"
+    smatrixfile = "./Data/similarityMatrix.npy"
     dmatrix = 1 - np.load(smatrixfile)
     distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
     #distanceList = [ 0.8 ]
     for each in ["allosteric", "competitive"]:
         for distance in distanceList:
+            print "bindingtype", each
+            print "distance", distance
             main(each, distance, dmatrix)
