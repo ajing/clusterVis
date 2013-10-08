@@ -2,8 +2,21 @@
     Build Tree from dmatrix
 '''
 import ete2
+from ete2 import Tree, faces
 import datetime
 from hcluster import linkage, to_tree
+
+class ImgFace(faces.Face):
+    def __init__(self, img_file, width=None, height=None):
+        faces.Face.__init__(self)
+        self.img_file = img_file
+        self.width = width
+        self.height = height
+        
+    def update_pixmap(self):
+        self.pixmap = QtGui.QPixmap(self.img_file)
+        if self.width and self.height: 
+            self.pixmap = self.pixmap.scaled(self.width, self.height)
 
 class BuildTree():
     def __init__( self, leaderlist, dmatrix, moldict, figurename):
@@ -13,6 +26,7 @@ class BuildTree():
         self.figure   = figurename + ".svg"
         self.savePath = "./Data/"
         self.imgPath = "./Image/"
+        self.size    = len(leaderlist)
         self.drawTree()
 
     def LeaderMatrix( self, dmatrix, leaderlist ):
@@ -20,7 +34,7 @@ class BuildTree():
 
     def imageFace( self, nodeID ):
         imageFileName = self.molDict[ nodeID ][ "ligandid" ]
-        ligandFace    = ete2.faces.ImgFace( self.imgPath + imageFileName)
+        ligandFace    = ete2.faces.ImgFace( self.imgPath + imageFileName, 100, 100)
         return ligandFace
 
     def prepareTree( self ):
