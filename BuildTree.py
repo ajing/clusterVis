@@ -4,6 +4,7 @@
 import ete2
 from ete2 import Tree, faces
 import datetime
+import math
 from hcluster import linkage, to_tree
 
 class ImgFace(faces.Face):
@@ -23,6 +24,7 @@ class BuildTree():
         self.distanceMatrix = dmatrix
         self.leaderList = leaderlist
         self.molDict  = moldict
+        self.figuresize = len(leaderlist)
         self.figure   = figurename + ".svg"
         self.savePath = "./Data/"
         self.imgPath = "./Image/"
@@ -43,7 +45,6 @@ class BuildTree():
         Y = self.LeaderMatrix( self.distanceMatrix, self.leaderList )
         N = Y.shape[0]
         Z = linkage(Y, "single")
-        print Z.shape
         T = to_tree(Z)
         #ete2 section
         root = ete2.Tree()
@@ -61,11 +62,19 @@ class BuildTree():
                     if ch_node.id < N:
                         origID  = self.leaderList[ch_node.id]
                         ch.name = self.molDict[ origID ]["ligandid"]
+                        style = ete2.NodeStyle()
+                        style["vt_line_width"] = self.figuresize/5
+                        style["hz_line_width"] = self.figuresize/5
                         # give one more attribute for size
                         #ch.size = ch_node.id
-                        ch.img_style["size"] = self.molDict[ origID ]["size"]
+                        try:
+                            style["size"] = math.log( self.molDict[ origID ]["size"] )
+                            ch.img_style = style
+                        except:
+                            print self.molDict[ origID ]
+                            raise LookupError("cannot find:" + str(origID))
                         ligandFace = self.imageFace( ch_node.id )
-                        ch.add_face( ligandFace, column = 1 )
+                        #ch.add_face( ligandFace, column = 1 )
                     item2node[node].add_child(ch)
                     item2node[ch_node] = ch
                     to_visit.append(ch_node)
@@ -80,14 +89,14 @@ class BuildTree():
     def drawTree( self ):
         ts = ete2.TreeStyle()
         ts.mode = "c"
-        #ts.layout_fn = self.my_layout
+        ts.layout_fn = self.my_layout
         t = self.prepareTree()
         t.unroot()
         fmt='%Y-%m-%d-%Hh-%Mm_{fname}'
         newfilename = datetime.datetime.now().strftime(fmt).format(fname = self.figure)
         newfile = self.savePath + newfilename
-        t.show( tree_style = ts )
-        #t.render( newfile, tree_style=ts)
+        #t.show( tree_style = ts )
+        t.render( newfile, tree_style=ts)
 
 if __name__ == "__main__":
     pass
