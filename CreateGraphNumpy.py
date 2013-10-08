@@ -34,20 +34,26 @@ def ClusterAssignment( dmatrix, criteria, indexarray ):
     clusterIndex = fcluster(dlink, criteria)
     return clusterIndex
 
+def LeaderFilter( leaderID, moldict ):
+    # filter1: does not include any group with size less than 8
+    if moldict[ leaderID ][ "size" ] > 8:
+        return True
+    return False
+
 def LeaderInCluster( clusterIndex, moldict, bindingType ):
     leaderList = []
+    print "the total number of groups:", max(clusterIndex)
     for groupID in range(1, max(clusterIndex) + 1):
         indices = (clusterIndex == groupID).nonzero()
-        print "groupID:", groupID
         indicesConvert = indices[0].tolist()
         # probably I should find a way to get center of cluster
-        print len(indicesConvert)
         numLoops = 0
         leaderID   = RandomPickFromList(indicesConvert)
-        leaderList.append(leaderID)
         clusterSize = len(indicesConvert)
-        print "clustersize", clusterSize
         moldict[ leaderID ][ "size" ] = clusterSize
+        if LeaderFilter( leaderID, moldict ):
+            continue
+        leaderList.append(leaderID)
     return leaderList
 
 def RandomPickFromList( alist ):
@@ -139,6 +145,7 @@ def main( bindingtype, minDistance, dmatrix ):
         indexArray   = MapIndexbyBindingSite( moldict, bindingtype )
         clusterindex = ClusterAssignment( dmatrix, minDistance, indexArray )
         leaderlist = LeaderInCluster( clusterindex, moldict, bindingtype )
+        print "leaderlist length:", len(leaderlist)
         SaveLeaderAndMolDict(leaderlist, moldict, bindingtype, minDistance)
         SizeHistogram( moldict )
     leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
@@ -147,8 +154,10 @@ def main( bindingtype, minDistance, dmatrix ):
 if __name__ == "__main__":
     smatrixfile = "./Data/similarityMatrix.npy"
     dmatrix = 1 - np.load(smatrixfile)
-    distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
-    #distanceList = [ 0.8 ]
+    #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
+    #distanceList = [ 0.85, 0.9, 0.95 ]
+    #distanceList = [ 0.96, 0.97, 0.98, 0.99 ]
+    distanceList = [ 0.99 ]
     for each in ["allosteric", "competitive"]:
         for distance in distanceList:
             print "bindingtype", each
