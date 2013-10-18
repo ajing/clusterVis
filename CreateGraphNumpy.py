@@ -37,6 +37,8 @@ def ClusterAssignment( dmatrix, criteria, indexarray ):
 
 def LeaderFilter( leaderID, moldict ):
     # filter1: does not include any group with size less than 8
+    # disable this filter
+    #return False
     if moldict[ leaderID ][ "size" ] < 15:
         return True
     return False
@@ -129,8 +131,8 @@ def SanityCheck( moldict, dmatrix ):
 def main( bindingtype, minDistance, dmatrix ):
     #minDistance = 0.75
     infile      = "./Data/ligand_5_7_ppilot_modified.txt"
-    #leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
-    leaderAndmol = False
+    leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
+    #leaderAndmol = False
     if leaderAndmol:
         leaderfile, moldictfile = leaderAndmol
         with np.load(leaderfile) as leader_moldict:
@@ -161,7 +163,7 @@ if __name__ == "__main__":
     #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
     #distanceList = [ 0.85, 0.9, 0.95 ]
     #distanceList = [ 0.96, 0.97, 0.98, 0.99 ]
-    distanceList = [ 0.99 ]
+    distanceList = [ 0.999 ]
     #print "for distance criterion"
     print "for non-consistent criterion"
     for each in ["allosteric", "competitive"]:

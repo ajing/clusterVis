@@ -23,7 +23,7 @@ class Matrix(object):
 
     :Parameters:
         names : list
-            names of elements, used for indexing 
+            names of elements, used for indexing
         matrix : list
             nested list of numerical lists in lower triangular format
 
@@ -36,9 +36,9 @@ class Matrix(object):
     >>> m = Matrix(names, matrix)
     >>> m
     Matrix(names=['Alpha', 'Beta', 'Gamma', 'Delta'], matrix=[[0], [1, 0], [2, 3, 0], [4, 5, 6, 0]])
-    
+
     You can use two indices to get or assign an element in the matrix.
-    
+
     >>> m[1,2]
     3
     >>> m['Beta','Gamma']
@@ -48,7 +48,7 @@ class Matrix(object):
     4
 
     Further more, you can use one index to get or assign a list of elements related to that index.
-    
+
     >>> m[0]
     [0, 1, 2, 4]
     >>> m['Alpha']
@@ -95,7 +95,7 @@ class Matrix(object):
             for i in range(len(self)):
                 for j in range(i):
                     self.matrix[i][j] = matrix[i,j]
-            
+
 
     def __getitem__(self, item):
         """Access value(s) by the index(s) or name(s).
@@ -253,7 +253,7 @@ class Matrix(object):
     def __len__(self):
         """Matrix length"""
         return len(self.names)
-    
+
     def __repr__(self):
         return self.__class__.__name__ \
         + "(names=%s, matrix=%s)" \
@@ -261,7 +261,7 @@ class Matrix(object):
 
     def __str__(self):
         """Get a lower triangular matrix string"""
-        matrix_string = '\n'.join([self.names[i] + "\t" + 
+        matrix_string = '\n'.join([self.names[i] + "\t" +
             "\t".join([str(n) for n in self.matrix[i]]) for i in range(0, len(self))])
         matrix_string = matrix_string + "\n\t" + "\t".join(self.names)
         return matrix_string
@@ -309,9 +309,10 @@ def nj(distance_matrix):
     min_j = 0
     times = 0
     while len(dm) > 2:
-        print dm
         times += 1
         print "times:", times
+        if len(dm) < 8:
+            print dm
         # calculate nodeDist
         for i in range(0, len(dm)):
             node_dist[i] = 0
