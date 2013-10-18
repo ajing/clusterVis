@@ -14,10 +14,10 @@ class ImgFace(faces.Face):
         self.img_file = img_file
         self.width = width
         self.height = height
-        
+
     def update_pixmap(self):
         self.pixmap = QtGui.QPixmap(self.img_file)
-        if self.width and self.height: 
+        if self.width and self.height:
             self.pixmap = self.pixmap.scaled(self.width, self.height)
 
 class BuildTree():
