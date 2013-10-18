@@ -49,18 +49,19 @@ class BuildTree():
                         origID  = self.leaderList[ch_node.id]
                         ch.name = self.molDict[ origID ]["ligandid"]
                         style = ete2.NodeStyle()
-                        style["vt_line_width"] = self.figuresize/5
-                        style["hz_line_width"] = self.figuresize/5
+                        style["vt_line_width"] = math.log(self.figuresize)/5
+                        style["hz_line_width"] = math.log(self.figuresize)/5
                         # give one more attribute for size
-                        #ch.size = ch_node.id
+                        ch.size = ch_node.id
                         try:
-                            style["size"] = math.log( self.molDict[ origID ]["size"] )
+                            #style["size"] = math.log( self.molDict[ origID ]["size"] )
+                            style["size"] = math.sqrt( self.molDict[ origID ]["size"] )
                             ch.img_style = style
                         except:
                             print self.molDict[ origID ]
                             raise LookupError("cannot find:" + str(origID))
                         ligandFace = self.imageFace( ch_node.id )
-                        #ch.add_face( ligandFace, column = 1 )
+                        ch.add_face( ligandFace, column = 1 )
                     item2node[node].add_child(ch)
                     item2node[ch_node] = ch
                     to_visit.append(ch_node)

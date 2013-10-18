@@ -31,12 +31,13 @@ def ClusterAssignment( dmatrix, criteria, indexarray ):
         raise LookupError("Cannot find this type of binding")
     dmatrixType = dmatrix[modiarray, :][:, modiarray]
     dlink = linkage(dmatrixType)
+    #clusterIndex = fcluster(dlink, criteria, criterion="distance")
     clusterIndex = fcluster(dlink, criteria)
     return clusterIndex
 
 def LeaderFilter( leaderID, moldict ):
     # filter1: does not include any group with size less than 8
-    if moldict[ leaderID ][ "size" ] > 8:
+    if moldict[ leaderID ][ "size" ] < 15:
         return True
     return False
 
@@ -128,7 +129,8 @@ def SanityCheck( moldict, dmatrix ):
 def main( bindingtype, minDistance, dmatrix ):
     #minDistance = 0.75
     infile      = "./Data/ligand_5_7_ppilot_modified.txt"
-    leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
+    #leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
+    leaderAndmol = False
     if leaderAndmol:
         leaderfile, moldictfile = leaderAndmol
         with np.load(leaderfile) as leader_moldict:
@@ -154,10 +156,14 @@ def main( bindingtype, minDistance, dmatrix ):
 if __name__ == "__main__":
     smatrixfile = "./Data/similarityMatrix.npy"
     dmatrix = 1 - np.load(smatrixfile)
+    # a small filter to set everything less than 0.7 to 0
+    #dmatrix = dmatrix * (dmatrix > 0.7)
     #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
     #distanceList = [ 0.85, 0.9, 0.95 ]
     #distanceList = [ 0.96, 0.97, 0.98, 0.99 ]
     distanceList = [ 0.99 ]
+    #print "for distance criterion"
+    print "for non-consistent criterion"
     for each in ["allosteric", "competitive"]:
         for distance in distanceList:
             print "bindingtype", each
