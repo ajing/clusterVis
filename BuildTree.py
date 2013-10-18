@@ -51,7 +51,9 @@ class BuildTree():
         d_shrink_matrix = self.LeaderMatrix( self.distanceMatrix, self.leaderList )
         if not d_shrink_matrix.size[0] == len(leader_name):
             raise ValueError("size doesn't match between leaderlist and distance matrix")
-        DMatrix     = DistanceMatrix(leader_name, d_shrink_matrix)
+        DMatrix = DistanceMatrix(leader_name, d_shrink_matrix)
+        root    = nj(DMatrix)
+        return root
 
     def my_layout( self, node ):
         if not node.is_leaf():
