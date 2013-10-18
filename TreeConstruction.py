@@ -326,7 +326,7 @@ def nj(distance_matrix):
         for i in range(1, len(dm)):
             for j in range(0, i):
                 temp = dm[i, j] - node_dist[i] - node_dist[j]
-                if min_dist >= temp:
+                if min_dist > temp:
                     min_dist = temp
                     min_i = i
                     min_j = j
