@@ -54,6 +54,8 @@ def LeaderInCluster( clusterIndex, moldict, bindingType ):
         leaderID   = RandomPickFromList(indicesConvert)
         clusterSize = len(indicesConvert)
         moldict[ leaderID ][ "size" ] = clusterSize
+        # add key to moldict, so I can easily get clusterSize
+        moldict[ moldict[leaderID]["ligandid"] ] = clusterSize
         if LeaderFilter( leaderID, moldict ):
             continue
         leaderList.append(leaderID)
@@ -163,7 +165,7 @@ if __name__ == "__main__":
     #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
     #distanceList = [ 0.85, 0.9, 0.95 ]
     #distanceList = [ 0.96, 0.97, 0.98, 0.99 ]
-    distanceList = [ 0.999 ]
+    distanceList = [ 0.6 ]
     #print "for distance criterion"
     print "for non-consistent criterion"
     for each in ["allosteric", "competitive"]:
