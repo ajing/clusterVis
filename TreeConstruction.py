@@ -4,6 +4,7 @@
 
 import copy
 import numpy as np
+import datetime
 from ete2 import Tree
 
 
@@ -286,6 +287,17 @@ class DistanceMatrix(Matrix):
         for i in range(0, len(self)):
             self.matrix[i][i] = 0
 
+def AddLineForNode(clade, fileobj):
+    node_line = clade.name + "[label=\"" + clade.name + "\"];"
+    fileobj.write(node_line + "\n")
+
+def AddRelation(cladeChild, cladeParent, fileobj):
+    node1_relation = cladeChild.name + " -- " + cladeParent.name
+    fileobj.write(node1_relation + ";\n")
+
+def AddTwoChild(cladeChild1, cladeChild2, cladeParent, fileobj):
+    AddRelation(cladeChild1, cladeParent, fileobj)
+    AddRelation(cladeChild2, cladeParent, fileobj)
 
 def nj(distance_matrix):
     """Construct and return an Neighbor Joining tree.
@@ -294,6 +306,12 @@ def nj(distance_matrix):
         distance_matrix : DistanceMatrix
             The distance matrix for tree construction.
     """
+
+    # create dot langauge to file:
+    fmt='./Data/%Y-%m-%d-%Hh-%Mm_dot.gv'
+    newfilename = datetime.datetime.now().strftime(fmt)
+    newfileobj  = open(newfilename, "w")
+    newfileobj.write("graph G{\nsize=\"7,10\"; // inches\nratio=1.4; // h/w\nnode [shape=circle];\n")
 
     if not isinstance(distance_matrix, DistanceMatrix):
         raise TypeError("Must provide a DistanceMatrix object.")
@@ -341,6 +359,16 @@ def nj(distance_matrix):
         clade1.dist = (dm[min_i, min_j] + node_dist[min_i] - node_dist[min_j]) / 2
         clade2.dist = dm[min_i, min_j] - clade1.dist
 
+        # add lines to dot file
+        if not "_" in clade1.name:
+            AddLineForNode(clade1, newfileobj)
+        if not "_" in clade2.name:
+            AddLineForNode(clade2, newfileobj)
+        # relationship between nodes
+        if len(dm) > 3:
+            AddLineForNode(inner_clade, newfileobj)
+            AddTwoChild(clade1, clade2, inner_clade, fileobj)
+
         # update node list
         clades[min_j] = inner_clade
         del clades[min_i]
@@ -361,12 +389,24 @@ def nj(distance_matrix):
         clades[0].dist = 0
         clades[1].dist = dm[1, 0]
         clades[0].add_child(clades[1])
+        clades[0].name = clades[0].name + "_" + clades[1].name
+        AddLineForNode(clades[0], fileobj)
+        AddTwoChild(clade1, clade2, clades[0])
+        AddRelation(clades[1], clades[0])
         root = clades[0]
     else:
         clades[0].dist = dm[1, 0]
         clades[1].dist = 0
         clades[1].add_child(clades[0])
+        clades[1].name = clades[1].name + "_" + clades[0].name
+        AddLineForNode(clades[1], fileobj)
+        AddTwoChild(clade1, clade2, clades[1])
+        AddRelation(clades[0], clades[1])
         root = clades[1]
+
+    # close file obj for dot language
+    newfileobj.write("}")
+    newfileobj.close()
 
     return root
 
