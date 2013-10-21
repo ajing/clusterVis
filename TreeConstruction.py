@@ -4,6 +4,8 @@
 
 import copy
 import numpy as np
+import math
+import datetime
 from ete2 import Tree
 
 
@@ -23,7 +25,7 @@ class Matrix(object):
 
     :Parameters:
         names : list
-            names of elements, used for indexing 
+            names of elements, used for indexing
         matrix : list
             nested list of numerical lists in lower triangular format
 
@@ -36,9 +38,9 @@ class Matrix(object):
     >>> m = Matrix(names, matrix)
     >>> m
     Matrix(names=['Alpha', 'Beta', 'Gamma', 'Delta'], matrix=[[0], [1, 0], [2, 3, 0], [4, 5, 6, 0]])
-    
+
     You can use two indices to get or assign an element in the matrix.
-    
+
     >>> m[1,2]
     3
     >>> m['Beta','Gamma']
@@ -48,7 +50,7 @@ class Matrix(object):
     4
 
     Further more, you can use one index to get or assign a list of elements related to that index.
-    
+
     >>> m[0]
     [0, 1, 2, 4]
     >>> m['Alpha']
@@ -95,7 +97,7 @@ class Matrix(object):
             for i in range(len(self)):
                 for j in range(i):
                     self.matrix[i][j] = matrix[i,j]
-            
+
 
     def __getitem__(self, item):
         """Access value(s) by the index(s) or name(s).
@@ -253,7 +255,7 @@ class Matrix(object):
     def __len__(self):
         """Matrix length"""
         return len(self.names)
-    
+
     def __repr__(self):
         return self.__class__.__name__ \
         + "(names=%s, matrix=%s)" \
@@ -261,7 +263,7 @@ class Matrix(object):
 
     def __str__(self):
         """Get a lower triangular matrix string"""
-        matrix_string = '\n'.join([self.names[i] + "\t" + 
+        matrix_string = '\n'.join([self.names[i] + "\t" +
             "\t".join([str(n) for n in self.matrix[i]]) for i in range(0, len(self))])
         matrix_string = matrix_string + "\n\t" + "\t".join(self.names)
         return matrix_string
@@ -286,14 +288,40 @@ class DistanceMatrix(Matrix):
         for i in range(0, len(self)):
             self.matrix[i][i] = 0
 
+def AddLineForNode(clade, moldict, fileobj):
+    node_size  = None
+    node_color = None
+    alpha      = 0.3
+    try:
+        node_size = str(math.log(moldict[clade.name][0], 100) * alpha)
+        node_color = moldict[clade.name][1] == "allosteric" and "red" or "blue"
+        node_line = clade.name + "[label=\"\", width=" + node_size + " color=" + node_color + " ];"
+    except:
+        node_line = clade.name + "[label=\"\", width=0 ];"
+    fileobj.write(node_line + "\n")
 
-def nj(distance_matrix):
+def AddRelation(cladeChild, cladeParent, fileobj):
+    node1_relation = cladeChild.name + " -- " + cladeParent.name + " [len=" + str(cladeChild.dist) + "]"
+    #node1_relation = cladeChild.name + " -- " + cladeParent.name
+    fileobj.write(node1_relation + ";\n")
+
+def AddTwoChild(cladeChild1, cladeChild2, cladeParent, fileobj):
+    AddRelation(cladeChild1, cladeParent, fileobj)
+    AddRelation(cladeChild2, cladeParent, fileobj)
+
+def nj(distance_matrix, moldict):
     """Construct and return an Neighbor Joining tree.
 
     :Parameters:
         distance_matrix : DistanceMatrix
             The distance matrix for tree construction.
     """
+
+    # create dot langauge to file:
+    fmt='./Data/%Y-%m-%d-%Hh-%Mm_dot.gv'
+    newfilename = datetime.datetime.now().strftime(fmt)
+    newfileobj  = open(newfilename, "w")
+    newfileobj.write("graph G{\nnode [shape=circle, style=filled];\n")
 
     if not isinstance(distance_matrix, DistanceMatrix):
         raise TypeError("Must provide a DistanceMatrix object.")
@@ -309,9 +337,10 @@ def nj(distance_matrix):
     min_j = 0
     times = 0
     while len(dm) > 2:
-        print dm
         times += 1
         print "times:", times
+        #if len(dm) < 8:
+        #    print dm
         # calculate nodeDist
         for i in range(0, len(dm)):
             node_dist[i] = 0
@@ -340,6 +369,16 @@ def nj(distance_matrix):
         clade1.dist = (dm[min_i, min_j] + node_dist[min_i] - node_dist[min_j]) / 2
         clade2.dist = dm[min_i, min_j] - clade1.dist
 
+        # add lines to dot file
+        if not "_" in clade1.name:
+            AddLineForNode(clade1, moldict, newfileobj)
+        if not "_" in clade2.name:
+            AddLineForNode(clade2, moldict, newfileobj)
+        # relationship between nodes
+        if len(dm) > 3:
+            AddLineForNode(inner_clade, moldict, newfileobj)
+            AddTwoChild(clade1, clade2, inner_clade, newfileobj)
+
         # update node list
         clades[min_j] = inner_clade
         del clades[min_i]
@@ -360,12 +399,26 @@ def nj(distance_matrix):
         clades[0].dist = 0
         clades[1].dist = dm[1, 0]
         clades[0].add_child(clades[1])
+        clades[0].name = clades[0].name + "_" + clades[1].name
+        AddLineForNode(clades[0], moldict, newfileobj)
+        AddLineForNode(clades[1], moldict, newfileobj)
+        AddTwoChild(clade1, clade2, clades[0], newfileobj)
+        AddRelation(clades[1], clades[0], newfileobj)
         root = clades[0]
     else:
         clades[0].dist = dm[1, 0]
         clades[1].dist = 0
         clades[1].add_child(clades[0])
+        clades[1].name = clades[1].name + "_" + clades[0].name
+        AddLineForNode(clades[0], moldict, newfileobj)
+        AddLineForNode(clades[1], moldict, newfileobj)
+        AddTwoChild(clade1, clade2, clades[1], newfileobj)
+        AddRelation(clades[0], clades[1], newfileobj)
         root = clades[1]
+
+    # close file obj for dot language
+    newfileobj.write("}")
+    newfileobj.close()
 
     return root
 
@@ -377,6 +430,7 @@ if __name__ == "__main__":
     dmatrix    = np.matrix("1 0 0 0; 17 1 0 0 ; 21 12 1 0 ; 27 18 14 1")
     #dlist      = ["1","2","3","4","5","6","7","8","9"]
     dlist      = ["A","B","C","D"]
+    moldict    = {"A":[4,"allosteric"],"B":[3,"competitive"],"C":[6,"allosteric"],"D":[1,"competitive"]}
     DMatrix    = DistanceMatrix(dlist, dmatrix)
-    print nj(DMatrix).write(format = 7)
-    print nj(DMatrix)
+    print nj(DMatrix, moldict).write(format = 7)
+    print nj(DMatrix, moldict)
