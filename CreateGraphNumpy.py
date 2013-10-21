@@ -19,6 +19,8 @@ def MapIndexbyBindingSite( moldict, bindingtype):
     for eachID in moldict:
         if moldict[eachID]["typeofbinding"] == bindingtype:
             indexList.append(eachID)
+        else:
+            indexList.append(eachID)
     print "indexList length:", len(indexList)
     print "original length:", len(moldict.keys())
     return np.array(indexList)
@@ -38,12 +40,12 @@ def ClusterAssignment( dmatrix, criteria, indexarray ):
 def LeaderFilter( leaderID, moldict ):
     # filter1: does not include any group with size less than 8
     # disable this filter
-    #return False
+    return False
     if moldict[ leaderID ][ "size" ] < 15:
         return True
     return False
 
-def LeaderInCluster( clusterIndex, moldict, bindingType ):
+def LeaderInCluster( clusterIndex, moldict ):
     leaderList = []
     print "the total number of groups:", max(clusterIndex)
     for groupID in range(1, max(clusterIndex) + 1):
@@ -55,7 +57,7 @@ def LeaderInCluster( clusterIndex, moldict, bindingType ):
         clusterSize = len(indicesConvert)
         moldict[ leaderID ][ "size" ] = clusterSize
         # add key to moldict, so I can easily get clusterSize
-        moldict[ moldict[leaderID]["ligandid"] ] = clusterSize
+        moldict[ moldict[leaderID]["ligandid"] ] = [clusterSize, moldict[leaderID]["typeofbinding"]]
         if LeaderFilter( leaderID, moldict ):
             continue
         leaderList.append(leaderID)
@@ -124,7 +126,7 @@ def SaveLeaderAndMolDict(leaderlist, moldict, typeofbinding, criteria):
 
 def SanityCheck( moldict, dmatrix ):
     dmatrixdim = dmatrix.shape
-    moldictlen = len(moldict.keys())
+    moldictlen = sum( [ 1 for each in moldict.keys() if isinstance(each, int)] )
     if not dmatrixdim[0] == moldictlen:
         print "dmatrixdim:", dmatrixdim[0]
         print "moldictlen:", moldictlen
@@ -132,8 +134,8 @@ def SanityCheck( moldict, dmatrix ):
 
 def main( bindingtype, minDistance, dmatrix ):
     #minDistance = 0.75
-    infile      = "./Data/ligand_5_7_ppilot_modified.txt"
     leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
+    infile      = "./Data/ligand_5_7_ppilot_modified.txt"
     #leaderAndmol = False
     if leaderAndmol:
         leaderfile, moldictfile = leaderAndmol
@@ -150,11 +152,11 @@ def main( bindingtype, minDistance, dmatrix ):
         SanityCheck( moldict, dmatrix )
         indexArray   = MapIndexbyBindingSite( moldict, bindingtype )
         clusterindex = ClusterAssignment( dmatrix, minDistance, indexArray )
-        leaderlist = LeaderInCluster( clusterindex, moldict, bindingtype )
+        leaderlist = LeaderInCluster( clusterindex, moldict )
         print "leaderlist length:", len(leaderlist)
         SaveLeaderAndMolDict(leaderlist, moldict, bindingtype, minDistance)
         SizeHistogram( moldict )
-    leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
+    #leaderlist = BindingTypeFilter( leaderlist, moldict, bindingtype)
     BuildTree( leaderlist, dmatrix, moldict, str(minDistance) + "_" + bindingtype )
 
 if __name__ == "__main__":
@@ -165,11 +167,11 @@ if __name__ == "__main__":
     #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
     #distanceList = [ 0.85, 0.9, 0.95 ]
     #distanceList = [ 0.96, 0.97, 0.98, 0.99 ]
-    distanceList = [ 0.6 ]
+    distanceList = [ 0.8 ]
     #print "for distance criterion"
     print "for non-consistent criterion"
-    for each in ["allosteric", "competitive"]:
+    for each in ["all"]:
         for distance in distanceList:
-            print "bindingtype", each
+            print "bindingtype:", each
             print "distance", distance
             main(each, distance, dmatrix)

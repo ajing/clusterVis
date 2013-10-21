@@ -53,10 +53,10 @@ class BuildTree():
         if not d_shrink_matrix.size == len(leader_name)**2:
             raise ValueError("size doesn't match between leaderlist and distance matrix")
         DMatrix = DistanceMatrix(leader_name, d_shrink_matrix)
-        root    = nj(DMatrix)
+        root    = nj(DMatrix, self.molDict)
         fmt='%Y-%m-%d-%Hh-%Mm_{fname}_pickle_tree'
         newfilename = datetime.datetime.now().strftime(fmt).format(fname = self.figure)
-        pickle.dump(root, newfilename)
+        pickle.dump(root, open(newfilename, "w"))
         return root
 
     def my_layout( self, node ):

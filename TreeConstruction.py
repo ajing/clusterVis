@@ -4,6 +4,7 @@
 
 import copy
 import numpy as np
+import math
 import datetime
 from ete2 import Tree
 
@@ -287,19 +288,28 @@ class DistanceMatrix(Matrix):
         for i in range(0, len(self)):
             self.matrix[i][i] = 0
 
-def AddLineForNode(clade, fileobj):
-    node_line = clade.name + "[label=\"" + clade.name + "\"];"
+def AddLineForNode(clade, moldict, fileobj):
+    node_size  = None
+    node_color = None
+    alpha      = 0.3
+    try:
+        node_size = str(math.log(moldict[clade.name][0], 100) * alpha)
+        node_color = moldict[clade.name][1] == "allosteric" and "red" or "blue"
+        node_line = clade.name + "[label=\"\", width=" + node_size + " color=" + node_color + " ];"
+    except:
+        node_line = clade.name + "[label=\"\", width=0 ];"
     fileobj.write(node_line + "\n")
 
 def AddRelation(cladeChild, cladeParent, fileobj):
-    node1_relation = cladeChild.name + " -- " + cladeParent.name
+    node1_relation = cladeChild.name + " -- " + cladeParent.name + " [len=" + str(cladeChild.dist) + "]"
+    #node1_relation = cladeChild.name + " -- " + cladeParent.name
     fileobj.write(node1_relation + ";\n")
 
 def AddTwoChild(cladeChild1, cladeChild2, cladeParent, fileobj):
     AddRelation(cladeChild1, cladeParent, fileobj)
     AddRelation(cladeChild2, cladeParent, fileobj)
 
-def nj(distance_matrix):
+def nj(distance_matrix, moldict):
     """Construct and return an Neighbor Joining tree.
 
     :Parameters:
@@ -311,7 +321,7 @@ def nj(distance_matrix):
     fmt='./Data/%Y-%m-%d-%Hh-%Mm_dot.gv'
     newfilename = datetime.datetime.now().strftime(fmt)
     newfileobj  = open(newfilename, "w")
-    newfileobj.write("graph G{\nsize=\"7,10\"; // inches\nratio=1.4; // h/w\nnode [shape=circle];\n")
+    newfileobj.write("graph G{\nnode [shape=circle, style=filled];\n")
 
     if not isinstance(distance_matrix, DistanceMatrix):
         raise TypeError("Must provide a DistanceMatrix object.")
@@ -329,8 +339,8 @@ def nj(distance_matrix):
     while len(dm) > 2:
         times += 1
         print "times:", times
-        if len(dm) < 8:
-            print dm
+        #if len(dm) < 8:
+        #    print dm
         # calculate nodeDist
         for i in range(0, len(dm)):
             node_dist[i] = 0
@@ -361,13 +371,13 @@ def nj(distance_matrix):
 
         # add lines to dot file
         if not "_" in clade1.name:
-            AddLineForNode(clade1, newfileobj)
+            AddLineForNode(clade1, moldict, newfileobj)
         if not "_" in clade2.name:
-            AddLineForNode(clade2, newfileobj)
+            AddLineForNode(clade2, moldict, newfileobj)
         # relationship between nodes
         if len(dm) > 3:
-            AddLineForNode(inner_clade, newfileobj)
-            AddTwoChild(clade1, clade2, inner_clade, fileobj)
+            AddLineForNode(inner_clade, moldict, newfileobj)
+            AddTwoChild(clade1, clade2, inner_clade, newfileobj)
 
         # update node list
         clades[min_j] = inner_clade
@@ -390,18 +400,20 @@ def nj(distance_matrix):
         clades[1].dist = dm[1, 0]
         clades[0].add_child(clades[1])
         clades[0].name = clades[0].name + "_" + clades[1].name
-        AddLineForNode(clades[0], fileobj)
-        AddTwoChild(clade1, clade2, clades[0])
-        AddRelation(clades[1], clades[0])
+        AddLineForNode(clades[0], moldict, newfileobj)
+        AddLineForNode(clades[1], moldict, newfileobj)
+        AddTwoChild(clade1, clade2, clades[0], newfileobj)
+        AddRelation(clades[1], clades[0], newfileobj)
         root = clades[0]
     else:
         clades[0].dist = dm[1, 0]
         clades[1].dist = 0
         clades[1].add_child(clades[0])
         clades[1].name = clades[1].name + "_" + clades[0].name
-        AddLineForNode(clades[1], fileobj)
-        AddTwoChild(clade1, clade2, clades[1])
-        AddRelation(clades[0], clades[1])
+        AddLineForNode(clades[0], moldict, newfileobj)
+        AddLineForNode(clades[1], moldict, newfileobj)
+        AddTwoChild(clade1, clade2, clades[1], newfileobj)
+        AddRelation(clades[0], clades[1], newfileobj)
         root = clades[1]
 
     # close file obj for dot language
@@ -418,6 +430,7 @@ if __name__ == "__main__":
     dmatrix    = np.matrix("1 0 0 0; 17 1 0 0 ; 21 12 1 0 ; 27 18 14 1")
     #dlist      = ["1","2","3","4","5","6","7","8","9"]
     dlist      = ["A","B","C","D"]
+    moldict    = {"A":[4,"allosteric"],"B":[3,"competitive"],"C":[6,"allosteric"],"D":[1,"competitive"]}
     DMatrix    = DistanceMatrix(dlist, dmatrix)
-    print nj(DMatrix).write(format = 7)
-    print nj(DMatrix)
+    print nj(DMatrix, moldict).write(format = 7)
+    print nj(DMatrix, moldict)
