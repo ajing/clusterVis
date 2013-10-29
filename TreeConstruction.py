@@ -293,7 +293,7 @@ def AddLineForNode(clade, moldict, fileobj):
     node_color = None
     alpha      = 0.3
     try:
-        node_size = str(math.log(moldict[clade.name][0], 100) * alpha)
+        node_size = str(math.log(moldict[clade.name][0] + 1, 100) * alpha)
         node_color = moldict[clade.name][1] == "allosteric" and "red" or "blue"
         node_line = clade.name + "[label=\"\", width=" + node_size + " color=" + node_color + " ];"
     except:
@@ -338,7 +338,7 @@ def nj(distance_matrix, moldict):
     times = 0
     while len(dm) > 2:
         times += 1
-        print "times:", times
+        print "dimension of Distance Matrix:", len(dm)
         #if len(dm) < 8:
         #    print dm
         # calculate nodeDist
