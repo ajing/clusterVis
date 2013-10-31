@@ -70,7 +70,8 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                new_line = node_new + attr
+                attr_new = AddAttributeLabel(attr, node)
+                new_line = node_new + attr_new
             newfileobj.write(new_line)
         else:
             newfileobj.write(eachline)
