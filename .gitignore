@@ -40,4 +40,3 @@ nosetests.xml
 *.p
 *.npy
 *.npz
-*.gv
