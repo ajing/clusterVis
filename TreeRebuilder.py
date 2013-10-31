@@ -84,7 +84,7 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                if not "_" in node and float(GetAttributeValue("width", attr)) > 0.05:
+                if not "_" in node and float(GetAttributeValue("width", attr)) >= 0.3:
                     attr = AddAttributeLabel(attr, node)
                 new_line = node_new + attr
             newfileobj.write(new_line)
