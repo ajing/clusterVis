@@ -49,11 +49,24 @@ def HashANode(nodename):
         HashANode.counter += 1
         return "N" + str(HashANode.hashtable[nodename])
 
+def CleanAttribute(attr):
+    return attr.replace(",", "")
+
 def AddAttributeLabel(attr, label):
     if "label" not in attr:
         return attr
     idx = attr.index("\"")
     return attr[:(idx + 1)] + label + attr[(idx + 1):]
+
+def GetAttributeValue(attrname, attr):
+    left = attr.index("[") + 1
+    right = attr.index("]")
+    attr  = attr[left:right]
+    attrlist = attr.split()
+    for each in attrlist:
+        if attrname in each:
+            value = each.split("=")[1]
+            return value
 
 def RewriteDot(infile):
     nodename = dict()
@@ -62,6 +75,7 @@ def RewriteDot(infile):
     for eachline in open(infile):
         if NodeNameExist(eachline):
             name, attr = NameAndAttribute(eachline)
+            attr = CleanAttribute(attr)
             if IsEdge(eachline):
                 fnode, snode = ProcessName(name, True)
                 fnode_new = HashANode(fnode)
@@ -70,8 +84,9 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                attr_new = AddAttributeLabel(attr, node)
-                new_line = node_new + attr_new
+                if not "_" in node and float(GetAttributeValue("width", attr)) > 0.05:
+                    attr = AddAttributeLabel(attr, node)
+                new_line = node_new + attr
             newfileobj.write(new_line)
         else:
             newfileobj.write(eachline)
