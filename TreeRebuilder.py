@@ -49,6 +49,12 @@ def HashANode(nodename):
         HashANode.counter += 1
         return "N" + str(HashANode.hashtable[nodename])
 
+def AddAttributeLabel(attr, label):
+    if "label" not in attr:
+        return attr
+    idx = attr.index("\"")
+    return attr[:(idx + 1)] + label + attr[(idx + 1):]
+
 def RewriteDot(infile):
     nodename = dict()
     newfilename = infile + "_simple"
