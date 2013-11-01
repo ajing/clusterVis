@@ -50,13 +50,19 @@ def HashANode(nodename):
         return "N" + str(HashANode.hashtable[nodename])
 
 def CleanAttribute(attr):
-    return attr.replace(",", "")
+    new_attr = attr.replace(",", "")
+    return new_attr
 
 def AddAttributeLabel(attr, label):
     if "label" not in attr:
         return attr
     idx = attr.index("\"")
     return attr[:(idx + 1)] + label + attr[(idx + 1):]
+
+def AddMoreAttribute(attr, labelname, labelvalue):
+    right = attr.index("]")
+    new_attr = attr[:right] + " " + str(labelname) + "=\"" + str(labelvalue) + "\"]\n"
+    return new_attr
 
 def GetAttributeValue(attrname, attr):
     left = attr.index("[") + 1
@@ -66,7 +72,34 @@ def GetAttributeValue(attrname, attr):
     for each in attrlist:
         if attrname in each:
             value = each.split("=")[1]
-            return value
+            if value.endswith("!"):
+                return value[:-1]
+            else:
+                return value
+
+def GetSize(width):
+    return 100 ** (width/0.3)
+
+def SimplifyName(aname):
+    if "CHEMBL" in aname:
+        return aname.replace("CHEMBL", "C")
+    if "ASD" in aname:
+        return aname.replace("ASD", "A")
+
+@static_var("counter", 0)
+@static_var("hashtable", dict())
+def HashAName(nodename):
+    if nodename in HashAName.hashtable:
+        return str(HashAName.hashtable[nodename])
+    else:
+        HashAName.hashtable[nodename] = HashAName.counter
+        HashAName.counter += 1
+        return str(HashAName.hashtable[nodename])
+
+def PrintHash(hashtable):
+    newdict = dict((y,x) for x,y in hashtable.iteritems())
+    for each in newdict:
+        print each, ":", newdict[each]
 
 def RewriteDot(infile):
     nodename = dict()
@@ -84,13 +117,19 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                if not "_" in node and float(GetAttributeValue("width", attr)) >= 0.3:
-                    attr = AddAttributeLabel(attr, node)
+                if not "_" in node and float(GetAttributeValue("width", attr)) > 0.12:
+                    width = float(GetAttributeValue("width", attr)) 
+                    new_name = node + " " + str(int(GetSize(width)))
+                    attr = AddAttributeLabel(attr, new_name)
+                elif not "_" in node:
+                    new_name = "NOOO"
+                    attr = AddAttributeLabel(attr, new_name)
                 new_line = node_new + attr
             newfileobj.write(new_line)
         else:
             newfileobj.write(eachline)
     newfileobj.close()
+    PrintHash(HashAName.hashtable)
 
 if __name__ == "__main__":
     infile = sys.argv[1]
