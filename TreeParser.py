@@ -22,6 +22,7 @@ class Node:
 def SigNodeParser(treefile, cri_width):
     # input treefile, output node dict class
     node_list = []
+    node_size = []
     for eachline in open(treefile):
         if NodeNameExist(eachline) and not IsEdge(eachline):
             name, attr = NameAndAttribute(eachline)
@@ -29,23 +30,26 @@ def SigNodeParser(treefile, cri_width):
             if float(width) > cri_width:
                 anode = Node(name, width)
                 node_list.append(anode)
-    return node_list
+                node_size.append(int(GetSize(float(width))))
+    return node_list, node_size
 
-def SignificantClusters(ligands, nodelist):
+def SignificantClusters(ligands, nodelist, nodesize):
     sig_ligands = []
+    sig_nodesize = []
     for each in ligands:
-        for eachnode in nodelist:
-            if each == eachnode.name:
+        for i in range(len(nodesize)):
+            if each == nodelist[i].name:
                 sig_ligands.append(each)
-    return sig_ligands
+                sig_nodesize.append(nodesize[i])
+    return sig_ligands, sig_nodesize
 
 def GetBranchLargeCluster(ligandname, treefile):
-    level = 15
-    width_cut = 0.02
+    level = 200
+    width_cut = 0.15
     all_ligands_in_cluster = GetLigandBranch(ligandname, level, treefile)
-    node_list = SigNodeParser(treefile, width_cut)
-    s_ligands = SignificantClusters(all_ligands_in_cluster, node_list)
-    return s_ligands
+    node_list, node_size = SigNodeParser(treefile, width_cut)
+    s_ligands, sig_nodesize = SignificantClusters(all_ligands_in_cluster, node_list, node_size)
+    return s_ligands, sig_nodesize
 
 if __name__ == "__main__":
     tree_file = "./Data/all_0.9.gv"
