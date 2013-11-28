@@ -117,9 +117,10 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                if not "_" in node and float(GetAttributeValue("width", attr)) > 0.15:
-                    new_name = HashAName(node)
-                    attr = AddAttributeLabel(attr, new_name)
+                #if not "_" in node and float(GetAttributeValue("width", attr)) > 0.15:
+                ##for display large node
+                #    new_name = HashAName(node)
+                #    attr = AddAttributeLabel(attr, new_name)
                 new_line = node_new + attr
             newfileobj.write(new_line)
         else:
@@ -127,7 +128,17 @@ def RewriteDot(infile):
     newfileobj.close()
     PrintHash(HashAName.hashtable)
 
+def GetMaxWidth(infile):
+    widthlist = []
+    for eachline in open(infile):
+        if NodeNameExist(eachline):
+            name, attr = NameAndAttribute(eachline)
+            if not IsEdge(eachline):
+                widthlist.append(float(GetAttributeValue("width", attr)))
+    print max(widthlist)
+
 if __name__ == "__main__":
     infile = sys.argv[1]
     print infile
     RewriteDot(infile)
+    #GetMaxWidth(infile)

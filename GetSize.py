@@ -13,3 +13,8 @@ def GetWidth(size):
 if __name__ == "__main__":
     print "size is:", GetSize(0.15)
     print "width is:", GetWidth(25)
+    print "width is:", GetWidth(10)
+    print "width is:", GetWidth(20)
+    print "width is:", GetWidth(30)
+    print "width is:", GetWidth(40)
+    print "width is:", GetWidth(100)
