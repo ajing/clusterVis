@@ -4,9 +4,13 @@
 import math
 
 def GetSize(width):
+    if isinstance(width, str):
+        width = float(width)
     return 100 ** (width/0.3)
 
 def GetWidth(size):
+    if isinstance(size, str):
+        size = float(size)
     return math.log(size, 100) * 0.3
 
 
