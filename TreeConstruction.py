@@ -309,7 +309,7 @@ def AddTwoChild(cladeChild1, cladeChild2, cladeParent, fileobj):
     AddRelation(cladeChild1, cladeParent, fileobj)
     AddRelation(cladeChild2, cladeParent, fileobj)
 
-def nj(distance_matrix, moldict):
+def nj(distance_matrix, moldict, outfilename = False):
     """Construct and return an Neighbor Joining tree.
 
     :Parameters:
@@ -420,7 +420,10 @@ def nj(distance_matrix, moldict):
     newfileobj.write("}")
     newfileobj.close()
 
-    return root
+    if outfilename:
+        return newfilename
+    else:
+        return root
 
 if __name__ == "__main__":
     # some test cases

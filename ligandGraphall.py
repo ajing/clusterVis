@@ -9,9 +9,9 @@
 ##           printPairwise: print output from pairwiseSimilarity
 ######################
 
-#from rdkit import Chem
-#from rdkit import DataStructs
-#from rdkit.Chem import AllChem
+from rdkit import Chem
+from rdkit import DataStructs
+from rdkit.Chem import AllChem
 
 # for nams
 from nams import nams
@@ -85,22 +85,22 @@ def getSimilarityNAMS(smile1, smile2):
     print "smile2_clean:", smile2_clean
     mol1, mol_info1 = ms.get_mol_info(mol_t1[0],mol_t1[1])
     mol2, mol_info2 = ms.get_mol_info(mol_t2[0],mol_t2[1])
-    sim11, d_atoms = ms.get_similarity(mol_info1, mol_info1) 
+    sim11, d_atoms = ms.get_similarity(mol_info1, mol_info1)
     sim22, d_atoms = ms.get_similarity(mol_info2, mol_info2)
     sim12, d_atoms = ms.get_similarity(mol_info1, mol_info2)
     return sim12/(sim11+ sim22 -sim12)
 
-#def getSimilarity(smile1, smile2):
-#    # generate similarity score for two smiles strings
-#    m1 = Chem.MolFromSmiles(smile1)
-#    m2 = Chem.MolFromSmiles(smile2)
-#    if (m1 is None or m2 is None):
-#        return
-#    fp1 = AllChem.GetMorganFingerprint(m1, 3)
-#    fp2 = AllChem.GetMorganFingerprint(m2, 3)
-#    return DataStructs.TanimotoSimilarity(fp1, fp2)
+def getSimilarity(smile1, smile2):
+    # generate similarity score for two smiles strings
+    m1 = Chem.MolFromSmiles(smile1)
+    m2 = Chem.MolFromSmiles(smile2)
+    if (m1 is None or m2 is None):
+        return
+    fp1 = AllChem.GetMorganFingerprint(m1, 3)
+    fp2 = AllChem.GetMorganFingerprint(m2, 3)
+    return DataStructs.TanimotoSimilarity(fp1, fp2)
 
-def pairwiseSimilarity(ligand_dict):
+def pairwiseSimilarity(ligand_dict, simfunc):
     #calc similarity for ligand dict pairwise
     pairwise = []
     all_ligand_names = ligand_dict.keys()
@@ -114,7 +114,7 @@ def pairwiseSimilarity(ligand_dict):
             #print ligand_dict[eachid1]
             #print "eachid2"
             #print ligand_dict[eachid2]
-            pairwise.append( [ eachid1, eachid2, getSimilarityNAMS( ligand_dict[eachid1], ligand_dict[eachid2] )] )
+            pairwise.append( [ eachid1, eachid2, simfunc( ligand_dict[eachid1], ligand_dict[eachid2] )] )
         print i
     return pairwise
 
@@ -131,7 +131,7 @@ def filterOutput(infile, newfile = "newfile.pair"):
             out_obj.write(line)
     out_obj.close()
 
-def similarityMatrix(ligand_dict):
+def similarityMatrix(ligand_dict, simfunc):
     # return matrix for similarity between different ligands
     all_ligand_names = ligand_dict.keys()
     num_ligand = len(all_ligand_names)
@@ -142,8 +142,8 @@ def similarityMatrix(ligand_dict):
         for j in range( i, num_ligand ):
             print i,j
             eachid2 = all_ligand_names[j]
-            simmatrix[i,j] = getSimilarityNAMS( ligand_dict[eachid1], ligand_dict[eachid2] )
-            simmatrix[j,i] = getSimilarityNAMS( ligand_dict[eachid1], ligand_dict[eachid2] )
+            simmatrix[i,j] = simfunc( ligand_dict[eachid1], ligand_dict[eachid2] )
+            simmatrix[j,i] = simfunc( ligand_dict[eachid1], ligand_dict[eachid2] )
     #print simmatrix
     return simmatrix
 
@@ -167,8 +167,8 @@ if __name__ == "__main__":
     ligandfile = "./Data/ligand_5_7_ppilot.txt"
     liganddict = parseLigandFile(ligandfile)
     NewLigandFile( liganddict, ligandfile )
-    #pairwise = pairwiseSimilarity(liganddict)
-    smatrix  = similarityMatrix(liganddict)
+    #pairwise = pairwiseSimilarity(liganddict, getSimilarity)
+    smatrix  = similarityMatrix(liganddict, getSimilarity)
     np.save("similarityMatrix", smatrix)
     #printPairwise(pairwise, "test.pair")
     #filterOutput(ligandfile + "_pair", ligandfile + "_pair_filter")
