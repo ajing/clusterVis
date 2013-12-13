@@ -16,9 +16,6 @@ from rdkit.Chem import AllChem
 # for similarity matrix
 import numpy as np
 
-# for clean smile string
-import openbabel
-
 def CleanSmile(smile):
     # for ECPF, I just keep the original
     return smile
@@ -113,9 +110,9 @@ def similarityMatrix(ligand_dict, simfunc):
     print num_ligand
     simmatrix  = np.zeros((num_ligand,num_ligand))
     for i in range(num_ligand):
+        print i
         eachid1 = all_ligand_names[i]
         for j in range( i, num_ligand ):
-            print i,j
             eachid2 = all_ligand_names[j]
             simmatrix[i,j] = simfunc( ligand_dict[eachid1], ligand_dict[eachid2] )
             simmatrix[j,i] = simfunc( ligand_dict[eachid1], ligand_dict[eachid2] )
