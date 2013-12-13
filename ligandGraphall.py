@@ -13,27 +13,15 @@ from rdkit import Chem
 from rdkit import DataStructs
 from rdkit.Chem import AllChem
 
-# for nams
-from nams import nams
-ms=nams.Nams()
-
 # for similarity matrix
 import numpy as np
 
 # for clean smile string
 import openbabel
 
-def CleanSmile( smile ):
-    # this function is for nams
-    obConversion = openbabel.OBConversion()
-    obConversion.SetInAndOutFormats("smi", "smi")
-    mol = openbabel.OBMol()
-    obConversion.ReadString(mol, smile)
-    mol.StripSalts()
-    if mol.NumAtoms() < 4:
-        return None
-    clean_smi = obConversion.WriteString(mol)
-    return clean_smi
+def CleanSmile(smile):
+    # for ECPF, I just keep the original
+    return smile
 
 def get_allinfo(infile):
     # To understand ligand cluster file
@@ -76,26 +64,13 @@ def parseLigandFile(filename, bindingtype = None):
     return ligand_dict
 
 
-def getSimilarityNAMS(smile1, smile2):
-    smile1_clean = CleanSmile(smile1)
-    smile2_clean = CleanSmile(smile2)
-    mol_t1 = ("smi", smile1_clean)
-    mol_t2= ("smi", smile2_clean)
-    print "smile1_clean:", smile1_clean
-    print "smile2_clean:", smile2_clean
-    mol1, mol_info1 = ms.get_mol_info(mol_t1[0],mol_t1[1])
-    mol2, mol_info2 = ms.get_mol_info(mol_t2[0],mol_t2[1])
-    sim11, d_atoms = ms.get_similarity(mol_info1, mol_info1)
-    sim22, d_atoms = ms.get_similarity(mol_info2, mol_info2)
-    sim12, d_atoms = ms.get_similarity(mol_info1, mol_info2)
-    return sim12/(sim11+ sim22 -sim12)
-
 def getSimilarity(smile1, smile2):
     # generate similarity score for two smiles strings
     m1 = Chem.MolFromSmiles(smile1)
     m2 = Chem.MolFromSmiles(smile2)
     if (m1 is None or m2 is None):
         return
+    # ECFP6
     fp1 = AllChem.GetMorganFingerprint(m1, 3)
     fp2 = AllChem.GetMorganFingerprint(m2, 3)
     return DataStructs.TanimotoSimilarity(fp1, fp2)

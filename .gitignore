@@ -40,3 +40,6 @@ nosetests.xml
 *.p
 *.npy
 *.npz
+
+# ignore folder
+Data

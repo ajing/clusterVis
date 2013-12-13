@@ -61,7 +61,7 @@ def AddAttributeLabel(attr, label):
 
 def AddMoreAttribute(attr, labelname, labelvalue):
     right = attr.index("]")
-    new_attr = attr[:right] + " " + str(labelname) + "=\"" + str(labelvalue) + "\"]\n"
+    new_attr = attr[:right] + " " + str(labelname) + "=" + str(labelvalue) + "]\n"
     return new_attr
 
 def GetAttributeValue(attrname, attr):
@@ -117,10 +117,11 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                #if not "_" in node and float(GetAttributeValue("width", attr)) > 0.15:
-                ##for display large node
-                #    new_name = HashAName(node)
-                #    attr = AddAttributeLabel(attr, new_name)
+                if not "_" in node and float(GetAttributeValue("width", attr)) > 0.15:
+                #for display large node
+                    new_name = HashAName(node)
+                    attr = AddAttributeLabel(attr, new_name)
+                    attr = AddMoreAttribute(attr, "fixedsize", "true")
                 new_line = node_new + attr
             newfileobj.write(new_line)
         else:
