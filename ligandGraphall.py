@@ -16,9 +16,20 @@ from rdkit.Chem import AllChem
 # for similarity matrix
 import numpy as np
 
-def CleanSmile(smile):
-    # for ECPF, I just keep the original
-    return smile
+# for clean of smile string
+import openbabel
+
+def CleanSmile( smile ):
+    # only keep smile string with more than 6 atoms
+    obConversion = openbabel.OBConversion()
+    obConversion.SetInAndOutFormats("smi", "smi")
+    mol = openbabel.OBMol()
+    obConversion.ReadString(mol, smile)
+    mol.StripSalts()
+    if mol.NumAtoms() < 6:
+        return None
+    clean_smi = obConversion.WriteString(mol)
+    return clean_smi
 
 def get_allinfo(infile):
     # To understand ligand cluster file
