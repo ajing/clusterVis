@@ -12,6 +12,7 @@
 from rdkit import Chem
 from rdkit import DataStructs
 from rdkit.Chem import AllChem
+from rdkit.Chem.AtomPairs import Pairs
 
 # for similarity matrix
 import numpy as np
@@ -71,6 +72,17 @@ def getSimilarity(smile1, smile2):
     fp1 = AllChem.GetMorganFingerprint(m1, 3)
     fp2 = AllChem.GetMorganFingerprint(m2, 3)
     return DataStructs.TanimotoSimilarity(fp1, fp2)
+
+def getSimilarityAtomPair(smile1, smile2):
+    # generate similarity score for two smiles strings
+    m1 = Chem.MolFromSmiles(smile1)
+    m2 = Chem.MolFromSmiles(smile2)
+    if (m1 is None or m2 is None):
+        return
+    # atom-pair descriptors
+    fp1 = Pairs.GetAtomPairFingerprint(m1)
+    fp2 = Pairs.GetAtomPairFingerprint(m2)
+    return DataStructs.DiceSimilarity(fp1, fp2)
 
 def pairwiseSimilarity(ligand_dict, simfunc):
     #calc similarity for ligand dict pairwise
