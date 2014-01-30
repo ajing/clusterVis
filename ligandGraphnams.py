@@ -15,8 +15,6 @@ def getSimilarityNAMS(smile1, smile2):
     smile2_clean = CleanSmile(smile2)
     mol_t1 = ("smi", smile1_clean)
     mol_t2= ("smi", smile2_clean)
-    print "smile1_clean:", smile1_clean
-    print "smile2_clean:", smile2_clean
     mol1, mol_info1 = ms.get_mol_info(mol_t1[0],mol_t1[1])
     mol2, mol_info2 = ms.get_mol_info(mol_t2[0],mol_t2[1])
     sim11, d_atoms = ms.get_similarity(mol_info1, mol_info1)
@@ -31,7 +29,7 @@ def CleanSmile( smile ):
     mol = openbabel.OBMol()
     obConversion.ReadString(mol, smile)
     mol.StripSalts()
-    if mol.NumAtoms() < 4:
+    if mol.NumAtoms() < 6:
         return None
     clean_smi = obConversion.WriteString(mol)
     return clean_smi

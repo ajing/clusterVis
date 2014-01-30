@@ -301,7 +301,7 @@ def AddLineForNode(clade, moldict, fileobj):
     fileobj.write(node_line + "\n")
 
 def AddRelation(cladeChild, cladeParent, fileobj):
-    node1_relation = cladeChild.name + " -- " + cladeParent.name + " [len=" + str(cladeChild.dist) + "]"
+    node1_relation = cladeChild.name + " -- " + cladeParent.name + " [len=" + "{:f}".format(cladeChild.dist).rstrip("0") + "]"
     #node1_relation = cladeChild.name + " -- " + cladeParent.name
     fileobj.write(node1_relation + ";\n")
 

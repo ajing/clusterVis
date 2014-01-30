@@ -117,11 +117,11 @@ def RewriteDot(infile):
             else:
                 node = ProcessName(name, False)
                 node_new = HashANode(node)
-                if not "_" in node and float(GetAttributeValue("width", attr)) > 0.15:
-                #for display large node
-                    new_name = HashAName(node)
-                    attr = AddAttributeLabel(attr, new_name)
-                    attr = AddMoreAttribute(attr, "fixedsize", "true")
+                #if not "_" in node and float(GetAttributeValue("width", attr)) > 0.15:
+                ##for display large node
+                #    new_name = HashAName(node)
+                #    attr = AddAttributeLabel(attr, new_name)
+                #    attr = AddMoreAttribute(attr, "fixedsize", "true")
                 new_line = node_new + attr
             newfileobj.write(new_line)
         else:
