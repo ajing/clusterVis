@@ -143,6 +143,7 @@ def similarityMatrix(ligand_dict, simfunc):
     return simmatrix
 
 def NewLigandFile( ligand_dict, filename ):
+    # new ligand file with non redundant information
     newfilename = filename + "_new"
     out_obj     = open( newfilename, "w" )
     in_lines    = open( filename, "r" ).readlines()

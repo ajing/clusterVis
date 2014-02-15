@@ -7,7 +7,7 @@
 import sys
 
 def NodeNameExist(line):
-    if "CHEMBL" in line or "ASD" in line:
+    if "CHEMBL" in line or "ASD" in line or "Chk1" in line:
         return True
     else:
         return False
