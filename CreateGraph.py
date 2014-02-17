@@ -35,7 +35,7 @@ def BindingTypeFilter( alist, moldict, bindingType = None ):
         return alist
     newlist = []
     for eachIndex in alist:
-        if moldict[ eachIndex ]["typeofbinding"] == bindingType:
+        if IsTypeofBinding( eachIndex, moldict, bindingType):
             newlist.append( eachIndex )
     if len(newlist) == 0:
         raise RuntimeError("Empty list after filtering!!")
@@ -54,6 +54,8 @@ def LeaderInCluster( graphObj, moldict ):
     return leaderList
 
 def IsTypeofBinding( index, moldict, typeofbinding ):
+    if typeofbinding == "all":
+        return True
     return moldict[index]["typeofbinding"] == typeofbinding
 
 def MoleculeDictionary( infile ):
@@ -125,8 +127,9 @@ def main( bindingtype, minDistance, dmatrix ):
 if __name__ == "__main__":
     smatrixfile = "./Data/similarityMatrix.npy"
     dmatrix = 1 - np.load(smatrixfile)
-    distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
-    #distanceList = [ 0.8 ]
-    for each in ["allosteric", "competitive"]:
+    #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
+    distanceList = [ 0.6 ]
+    #for each in ["allosteric", "competitive"]:
+    for each in ["all"]:
         for distance in distanceList:
             main(each, distance, dmatrix)
