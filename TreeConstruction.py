@@ -82,6 +82,7 @@ class Matrix(object):
             if len(set(names)) == len(names):
                 self.names = names
             else:
+                print names
                 raise ValueError("Duplicate names found")
         else:
             raise TypeError("'names' should be a list of strings")

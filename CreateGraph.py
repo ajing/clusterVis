@@ -1,5 +1,6 @@
 """
     Create graph from dmatrix
+!!!!!!!!!!!!!!!! Please use CreateGraphNumpy.py, this file is obsolete !!!!!!!!!!!!!!!
 """
 import networkx as nx
 import numpy as np
@@ -104,8 +105,9 @@ def SaveLeaderAndMolDict(leaderlist, moldict, typeofbinding, criteria):
 
 def main( bindingtype, minDistance, dmatrix ):
     #minDistance = 0.75
-    infile      = "./Data/ligand_5_7_ppilot.txt"
-    leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
+    infile      = "./Data/ligand_5_7_ppilot_modified.txt"
+    #leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
+    leaderAndmol = None
     if leaderAndmol:
         leaderfile, moldictfile = leaderAndmol
         with np.load(leaderfile) as leader_moldict:
@@ -127,8 +129,9 @@ def main( bindingtype, minDistance, dmatrix ):
 if __name__ == "__main__":
     smatrixfile = "./Data/similarityMatrix.npy"
     dmatrix = 1 - np.load(smatrixfile)
+    print dmatrix.shape
     #distanceList = [ 0.6, 0.65, 0.7, 0.8 ]
-    distanceList = [ 0.6 ]
+    distanceList = [ 0.1 ]
     #for each in ["allosteric", "competitive"]:
     for each in ["all"]:
         for distance in distanceList:
