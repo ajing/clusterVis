@@ -5,7 +5,7 @@ import numpy as np
 import os
 import pickle
 from random import choice
-from MakeStructuresForSmiles import GetAllinfo
+from FileParser import GetAllinfo
 from BuildTree import BuildTree
 from hcluster import linkage, fcluster
 # Global variable so I can change easily
