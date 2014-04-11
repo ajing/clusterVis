@@ -136,7 +136,7 @@ def main( bindingtype, minDistance, dmatrix ):
     #minDistance = 0.75
     leaderAndmol = CheckExistingLeaderlist( bindingtype, minDistance )
     infile      = "./Data/ligand_5_7_ppilot_modified.txt"
-    #leaderAndmol = False
+    leaderAndmol = False
     if leaderAndmol:
         leaderfile, moldictfile = leaderAndmol
         with np.load(leaderfile) as leader_moldict:
