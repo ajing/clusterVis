@@ -24,13 +24,25 @@ def EdgeHistMain():
     infile = "Data/09_simple_10_2.gv"
     EdgeHist(infile)
 
-def LenHist(numpyfile):
-    dmatrix = numpy.load(numpyfile)
-    print dmatriz.size
+def LenHist(clusterleader, matrixfile):
+    leader = numpy.load(clusterleader)
+    dmatrix = numpy.load(matrixfile)
+    leaderindex = numpy.array(leader["arr_0"])
+    leaderindex.sort()
+    print leaderindex
+    leader_dmatrix = dmatrix[:,leaderindex][leaderindex, :]
+    print leader_dmatrix.size
+    leader_dvector = leader_dmatrix.flatten()
+    leader_dvector = leader_dvector[leader_dvector < 1]
+    print leader_dvector
+    print len(leader_dvector)
+    plt.hist( leader_dvector, bins = 100, normed = True)
+    plt.show()
 
 def LenHistMain():
-    nfile = "Data/all_0.9.npz"
-    LenHist(nfile)
+    leaderfile = "Data/all_0.9.npz"
+    matrixfile = "Data/similarityMatrix.npy"
+    LenHist(leaderfile, matrixfile)
 
 if __name__ == "__main__":
     LenHistMain()
