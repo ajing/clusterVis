@@ -13,7 +13,7 @@ def EdgeHist(dotfile):
             name, attr = NameAndAttribute(line)
             lenvalue = GetAttributeValue("len", attr).replace('"', '').replace(",",'')
             lenlist.append(float(lenvalue))
-    plt.hist(lenlist, 10)
+    plt.hist(lenlist, bins = 100, normed = True)
     plt.show()
 
 def EdgeHistMain():
@@ -45,4 +45,5 @@ def LenHistMain():
     LenHist(leaderfile, matrixfile)
 
 if __name__ == "__main__":
-    LenHistMain()
+    EdgeHistMain()
+    #LenHistMain()
