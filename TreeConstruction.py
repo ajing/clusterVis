@@ -289,7 +289,7 @@ class DistanceMatrix(Matrix):
         for i in range(0, len(self)):
             self.matrix[i][i] = 0
 
-def AddLineForNode(clade, moldict, fileobj):
+def AddLineForNode(clade, moldict, filecontent):
     node_size  = None
     node_color = None
     alpha      = 0.3
@@ -302,16 +302,16 @@ def AddLineForNode(clade, moldict, fileobj):
         node_line = clade.name + "[label=\"\", width=" + node_size + " color=" + node_color + " ];"
     except:
         node_line = clade.name + "[label=\"\", width=0 ];"
-    fileobj.write(node_line + "\n")
+    filecontent.append(node_line)
 
-def AddRelation(cladeChild, cladeParent, fileobj):
+def AddRelation(cladeChild, cladeParent, filecontent):
     node1_relation = cladeChild.name + " -- " + cladeParent.name + " [len=" + "{:f}".format(cladeChild.dist).rstrip("0") + "]"
     #node1_relation = cladeChild.name + " -- " + cladeParent.name
-    fileobj.write(node1_relation + ";\n")
+    filecontent.append(node1_relation + ";")
 
-def AddTwoChild(cladeChild1, cladeChild2, cladeParent, fileobj):
-    AddRelation(cladeChild1, cladeParent, fileobj)
-    AddRelation(cladeChild2, cladeParent, fileobj)
+def AddTwoChild(cladeChild1, cladeChild2, cladeParent, filecontent):
+    AddRelation(cladeChild1, cladeParent, filecontent)
+    AddRelation(cladeChild2, cladeParent, filecontent)
 
 def nj(distance_matrix, moldict, outfilename = False):
     """Construct and return an Neighbor Joining tree.
@@ -321,11 +321,10 @@ def nj(distance_matrix, moldict, outfilename = False):
             The distance matrix for tree construction.
     """
 
-    # create dot langauge to file:
-    fmt='./Data/%Y-%m-%d-%Hh-%Mm_dot.gv'
-    newfilename = datetime.datetime.now().strftime(fmt)
-    newfileobj  = open(newfilename, "w")
-    newfileobj.write("graph G{\nnode [shape=circle, style=filled];\n")
+    # file content
+    filecontent = []
+    aline = "graph G{\nnode [shape=circle, style=filled];"
+    filecontent.append(aline)
 
     if not isinstance(distance_matrix, DistanceMatrix):
         raise TypeError("Must provide a DistanceMatrix object.")
@@ -375,13 +374,13 @@ def nj(distance_matrix, moldict, outfilename = False):
 
         # add lines to dot file
         if not "_" in clade1.name:
-            AddLineForNode(clade1, moldict, newfileobj)
+            AddLineForNode(clade1, moldict, filecontent)
         if not "_" in clade2.name:
-            AddLineForNode(clade2, moldict, newfileobj)
+            AddLineForNode(clade2, moldict, filecontent)
         # relationship between nodes
         if len(dm) > 3:
-            AddLineForNode(inner_clade, moldict, newfileobj)
-            AddTwoChild(clade1, clade2, inner_clade, newfileobj)
+            AddLineForNode(inner_clade, moldict, filecontent)
+            AddTwoChild(clade1, clade2, inner_clade, filecontent)
 
         # update node list
         clades[min_j] = inner_clade
@@ -404,24 +403,28 @@ def nj(distance_matrix, moldict, outfilename = False):
         clades[1].dist = dm[1, 0]
         clades[0].add_child(clades[1])
         clades[0].name = clades[0].name + "_" + clades[1].name
-        AddLineForNode(clades[0], moldict, newfileobj)
-        AddLineForNode(clades[1], moldict, newfileobj)
-        AddTwoChild(clade1, clade2, clades[0], newfileobj)
-        AddRelation(clades[1], clades[0], newfileobj)
+        AddLineForNode(clades[0], moldict, filecontent)
+        AddLineForNode(clades[1], moldict, filecontent)
+        AddTwoChild(clade1, clade2, clades[0], filecontent)
+        AddRelation(clades[1], clades[0], filecontent)
         root = clades[0]
     else:
         clades[0].dist = dm[1, 0]
         clades[1].dist = 0
         clades[1].add_child(clades[0])
         clades[1].name = clades[1].name + "_" + clades[0].name
-        AddLineForNode(clades[0], moldict, newfileobj)
-        AddLineForNode(clades[1], moldict, newfileobj)
-        AddTwoChild(clade1, clade2, clades[1], newfileobj)
-        AddRelation(clades[0], clades[1], newfileobj)
+        AddLineForNode(clades[0], moldict, filecontent)
+        AddLineForNode(clades[1], moldict, filecontent)
+        AddTwoChild(clade1, clade2, clades[1], filecontent)
+        AddRelation(clades[0], clades[1], filecontent)
         root = clades[1]
 
+    # create dot langauge to file:
+    fmt='./Data/%Y-%m-%d-%Hh-%Mm_dot.gv'
+    newfilename = datetime.datetime.now().strftime(fmt)
+    newfileobj  = open(newfilename, "w")
     # close file obj for dot language
-    newfileobj.write("}")
+    newfileobj.write("\n".join(filecontent) + "}")
     newfileobj.close()
 
     if outfilename:
